@@ -1,6 +1,6 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { Application, NextFunction, Request, Response } from 'express';
+import express, { Application, NextFunction, Request } from 'express';
 import httpStatus from 'http-status';
 
 // app init
@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // handle not found
-app.use((req: Request, res: any, next: NextFunction) => {
+app.use((req: Request, res: string, next: NextFunction) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: 'Not Found',

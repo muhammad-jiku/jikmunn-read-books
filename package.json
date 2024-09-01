@@ -5,23 +5,25 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.10",
+    "pinst": "^3.0.0"
+  },
   "scripts": {
     "prepare": "husky"
   },
   "lint-staged": {
-    "client/**/*.{js,ts,jsx,tsx}": [
-      "cd client && yarn lint-prettier"
+    "client/src/**/*.+(js|ts|jsx|tsx|html|json)": [
+      "yarn --cwd client lint-prettier",
+      "yarn --cwd client lint:fix",
+      "yarn --cwd client prettier:fix"
     ],
-    "client/src/**/*.{js,ts,jsx,tsx}": [
-      "cd client && yarn lint-prettier"
-    ],
-    "server/src/**/*.{js,ts}": [
-      "cd server && yarn lint-prettier"
+    "server/src/**/*.+(js|ts|json)": [
+      "yarn --cwd server lint-prettier",
+      "yarn --cwd server lint:fix",
+      "yarn --cwd server prettier:fix"
     ]
-  },
-  "devDependencies": {
-    "husky": "^9.1.5",
-    "lint-staged": "^15.2.10",
-    "pinst": "^3.0.0"
   }
 }

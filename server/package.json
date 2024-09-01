@@ -11,7 +11,7 @@
     "dev": "tsc --watch",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prettier:check": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "prettier:check": "prettier --ignore-path .gitignore --write \"src/**/*.+(js|ts|json)\"",
     "prettier:fix": "prettier --write .",
     "lint-prettier": "yarn lint:check && yarn prettier:check",
     "test": "echo \"Error: no test specified\" && exit 1"

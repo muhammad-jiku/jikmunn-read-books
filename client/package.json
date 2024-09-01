@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prettier:check": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|jsx|tsx|html|json)\"",
+    "prettier:check": "prettier --ignore-path .gitignore --write \"src/**/*.+(js|ts|jsx|tsx|html|json)\"",
     "prettier:fix": "prettier --write .",
-    "lint-prettier": "yarn lint && yarn prettier:check",
+    "lint-prettier": "yarn lint:check && yarn prettier:check",
     "preview": "vite preview"
   },
   "dependencies": {
