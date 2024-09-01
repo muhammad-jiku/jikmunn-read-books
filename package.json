@@ -11,13 +11,11 @@
   "lint-staged": {
     "client/**/*.{js,ts,jsx,tsx}": [
       "cd client && yarn lint:fix",
-      "cd client && yarn prettier:fix",
-      "git add"
+      "cd client && yarn prettier:fix"
     ],
     "server/**/*.{js,ts}": [
       "cd server && yarn lint:fix",
-      "cd server && yarn prettier:fix",
-      "git add"
+      "cd server && yarn prettier:fix"
     ]
   },
   "devDependencies": {
