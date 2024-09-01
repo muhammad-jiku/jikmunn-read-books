@@ -10,12 +10,13 @@
   },
   "lint-staged": {
     "client/**/*.{js,ts,jsx,tsx}": [
-      "cd client && yarn lint:fix",
-      "cd client && yarn prettier:fix"
+      "cd client && yarn lint-prettier"
     ],
-    "server/**/*.{js,ts}": [
-      "cd server && yarn lint:fix",
-      "cd server && yarn prettier:fix"
+    "client/src/**/*.{js,ts,jsx,tsx}": [
+      "cd client && yarn lint-prettier"
+    ],
+    "server/src/**/*.{js,ts}": [
+      "cd server && yarn lint-prettier"
     ]
   },
   "devDependencies": {
