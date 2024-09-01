@@ -1,0 +1,28 @@
+{
+  "name": "jikmunn-read-books",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "client/**/*.{js,ts,jsx,tsx}": [
+      "cd client && yarn lint:fix",
+      "cd client && yarn prettier:fix",
+      "git add"
+    ],
+    "server/**/*.{js,ts}": [
+      "cd server && yarn lint:fix",
+      "cd server && yarn prettier:fix",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.10",
+    "pinst": "^3.0.0"
+  }
+}
