@@ -4,22 +4,33 @@ import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
-    files: ['*.ts', '*.tsx'], // Apply this config only to TypeScript files
+    files: ['**/*.ts', '**/*.tsx'], // Apply this config to all TypeScript files in the project
     languageOptions: {
       parser: tsParser, // Use TypeScript parser
       ecmaVersion: 2021,
+      globals: {
+        myGlobalVariable: 'readonly',
+        process: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': tsEslint, // Use TypeScript ESLint plugin
     },
     rules: {
-      'no-unused-vars': 'off', // Disable the base rule as it is handled by TypeScript plugin
-      '@typescript-eslint/no-unused-vars': ['error'], // Use TypeScript plugin's rule
-      '@typescript-eslint/no-explicit-any': 'error', // Avoid usage of `any`
-      '@typescript-eslint/explicit-function-return-type': 'error', // Enforce function return types
-      'no-console': 'warn', // Warning for console statements
-      'no-undef': 'warn', // Warning for undefined variables
+      'no-undef': 'warn',
+      'no-console': 'warn',
+      'no-unused-expressions': 'warn',
+      'no-unused-vars': 'error',
+      'no-unreachable': 'error',
+      'prefer-const': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
+      // '@typescript-eslint/consistent-type-definitions': ['error', 'type'], // Use 'interface' or 'type'
+      '@typescript-eslint/explicit-function-return-type': 'warn',
+      '@typescript-eslint/no-empty-function': 'warn',
+      '@typescript-eslint/no-inferrable-types': 'warn',
     },
+  },
+  {
     ignores: ['**/dist/', '**/node_modules/', '.env'], // Ignore specified directories
   },
 ];

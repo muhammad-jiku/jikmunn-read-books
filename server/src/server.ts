@@ -11,6 +11,7 @@ process.on('uncaughtException', error => {
 
 let server: Server;
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
   try {
     await mongoose.connect(config.database_url as string);
