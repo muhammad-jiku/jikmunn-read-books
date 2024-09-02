@@ -17,16 +17,10 @@
     "prettier:fix": "prettier --write .",
     "prepare": "husky",
     "lint-prettier": "yarn lint:check && yarn prettier:check",
-    "lint-staged": "yarn lint-prettier",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.ts": "yarn lint-prepare"
+  "simple-git-hooks": {
+    "pre-commit": "yarn lint-prettier"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -60,6 +54,7 @@
     "lint-staged": "^15.2.10",
     "pinst": "^3.0.0",
     "prettier": "^3.3.2",
+    "simple-git-hooks": "^2.11.1",
     "ts-node-dev": "^2.0.0",
     "tsconfig.json": "^1.0.11",
     "typescript": "^5.4.5",
