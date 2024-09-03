@@ -6,13 +6,13 @@ import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import config from '../../config';
 import ApiError from '../../errors/ApiError';
-import handleCastError from '../../errors/handleCastError';
-import handleValidationError from '../../errors/handleValidationError';
-import handleZodError from '../../errors/handleZodError';
+import { handleCastError } from '../../errors/handleCastError';
+import { handleValidationError } from '../../errors/handleValidationError';
+import { handleZodError } from '../../errors/handleZodError';
 import { IGenericErrorMessage } from '../../interfaces/error';
 import { errorlogger } from '../../shared/logger';
 
-const globalErrorHandler: ErrorRequestHandler = (
+export const globalErrorHandler: ErrorRequestHandler = (
   err,
   req: Request,
   res: Response,
@@ -57,5 +57,3 @@ const globalErrorHandler: ErrorRequestHandler = (
     stack: config.env !== 'production' ? err?.stack : undefined,
   });
 };
-
-export default globalErrorHandler;

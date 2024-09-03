@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 import { IGenericErrorMessage } from '../interfaces/error';
 
-const handleCastError = (error: mongoose.Error.CastError) => {
+export const handleCastError = (error: mongoose.Error.CastError) => {
   const errors: IGenericErrorMessage[] = [
     {
       path: error.path,
@@ -17,5 +17,3 @@ const handleCastError = (error: mongoose.Error.CastError) => {
     errorMessages: errors,
   };
 };
-
-export default handleCastError;
