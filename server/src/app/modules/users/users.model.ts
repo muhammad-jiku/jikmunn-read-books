@@ -42,7 +42,9 @@ const userSchema = new Schema<IUser, IUserModel>(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+    },
   },
 );
 
@@ -55,7 +57,12 @@ userSchema.statics.isUserExist = async function (
 > | null> {
   const user = await User.findOne(
     { id },
-    { id: 1, role: 1, password: 1, needsPasswordChange: 1 },
+    {
+      id: 1,
+      role: 1,
+      password: 1,
+      needsPasswordChange: 1,
+    },
   );
 
   return user;

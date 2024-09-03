@@ -1,5 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { Model, Types } from 'mongoose';
+import { IAdmin } from '../admins/admins.interfaces';
+import { IAuthor } from '../authors/authors.interfaces';
+import { ICustomer } from '../customers/customers.interfaces';
 
 export interface IUser {
   id: string;
@@ -7,9 +10,9 @@ export interface IUser {
   password: string;
   needsPasswordChange: boolean;
   passwordChangedAt?: Date;
-  customer?: Types.ObjectId;
-  author?: Types.ObjectId;
-  admin?: Types.ObjectId;
+  customer?: Types.ObjectId | ICustomer;
+  author?: Types.ObjectId | IAuthor;
+  admin?: Types.ObjectId | IAdmin;
 }
 
 // types of user model for statics methods
