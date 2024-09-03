@@ -1,15 +1,25 @@
 {
-  "keep": {
-    "days": true,
-    "amount": 14
-  },
-  "auditLog": "D:\\_my_portfolio_\\MERN\\3. Read Books\\server\\logs\\winston\\errors\\.379f9f0dbdc518025d88d76cc39316df08e9df4b-audit.json",
-  "files": [
-    {
-      "date": 1725200229293,
-      "name": "D:\\_my_portfolio_\\MERN\\3. Read Books\\server\\logs\\winston\\errors\\jikmunn-read-books-2024-01-09-20-error.log",
-      "hash": "1d3e1730a2bcc18bc7ede32d99d8a542d1ca99b04c1278ec53594369b057b068"
-    }
-  ],
-  "hashType": "sha256"
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "D:\\_my_portfolio_\\MERN\\3. Read Books\\server\\logs\\winston\\errors\\.379f9f0dbdc518025d88d76cc39316df08e9df4b-audit.json",
+    "files": [
+        {
+            "date": 1725200229293,
+            "name": "D:\\_my_portfolio_\\MERN\\3. Read Books\\server\\logs\\winston\\errors\\jikmunn-read-books-2024-01-09-20-error.log",
+            "hash": "1d3e1730a2bcc18bc7ede32d99d8a542d1ca99b04c1278ec53594369b057b068"
+        },
+        {
+            "date": 1725338666117,
+            "name": "D:\\_my_portfolio_\\MERN\\3. Read Books\\server\\logs\\winston\\errors\\jikmunn-read-books-2024-03-09-10-error.log",
+            "hash": "21d1ba99f38ae74301dec0a28bf38cc7a8a43cce7c21b267ed05f87cdfa1c21f"
+        },
+        {
+            "date": 1725341335609,
+            "name": "D:\\_my_portfolio_\\MERN\\3. Read Books\\server\\logs\\winston\\errors\\jikmunn-read-books-2024-03-09-11-error.log",
+            "hash": "419b911922dd113281ae9c425ed2f93ac05aa73cc82e2792483b19d35a373397"
+        }
+    ],
+    "hashType": "sha256"
 }
