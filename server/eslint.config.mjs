@@ -24,7 +24,8 @@ export default [
       'no-unreachable': 'error',
       'prefer-const': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
-      // '@typescript-eslint/consistent-type-definitions': ['error', 'type'], // Use 'interface' or 'type'
+      // '@typescript-eslint/consistent-type-definitions': ['error', 'type'], // Use 'type' instead of 'interface'
+      // '@typescript-eslint/consistent-type-definitions': ['error', 'interface'], // Use 'interface' instead of 'type'
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-empty-function': 'warn',
       '@typescript-eslint/no-inferrable-types': 'warn',
