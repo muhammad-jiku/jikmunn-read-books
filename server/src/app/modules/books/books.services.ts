@@ -1,15 +1,75 @@
-import { SortOrder } from 'mongoose';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import httpStatus from 'http-status';
+import mongoose, { SortOrder } from 'mongoose';
+import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
+import { Author } from '../authors/authors.model';
+import { ManageBook } from '../manageBooks/manageBooks.model';
 import { bookSearchableFields } from './books.constants';
 import { IBook, IBookFilters } from './books.interfaces';
 import { Book } from './books.model';
 
-const createBook = async (payload: IBook): Promise<IBook | null> => {
-  const result = (await Book.create(payload)).populate('author');
+const createBook = async (bookData: IBook): Promise<IBook | null> => {
+  let newBookData = null;
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
 
-  return result;
+    // Check if the author exists
+    const isAuthorExist = await Author.findOne({ _id: bookData.author });
+    if (!isAuthorExist) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        'Sorry, this author does not exist!',
+      );
+    }
+
+    // Create the new book
+    const newBook = await Book.create([bookData], { session });
+    if (!newBook.length) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create new book!');
+    }
+
+    // Find or create the ManageBook document
+    let manageBooks = await ManageBook.findOne({
+      author: bookData.author,
+    }).session(session);
+
+    if (!manageBooks) {
+      // Create a new ManageBook record if it doesn't exist
+      manageBooks = new ManageBook({
+        author: bookData.author,
+        books: [{ book: newBook[0]._id }],
+      });
+      await manageBooks.save({ session });
+    } else {
+      // Add the new book to the existing ManageBook record
+      manageBooks.books.push({
+        book: newBook[0]._id as any,
+      });
+      await manageBooks.save({ session });
+    }
+
+    newBookData = newBook[0];
+
+    // Commit the transaction
+    await session.commitTransaction();
+    await session.endSession();
+  } catch (error) {
+    // Abort the transaction on error
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+
+  // Populate the author field before returning the new book data
+  if (newBookData) {
+    newBookData = await Book.findById(newBookData._id).populate('author');
+  }
+
+  return newBookData;
 };
 
 const getAllBooks = async (
@@ -76,9 +136,9 @@ const getBook = async (id: string): Promise<IBook | null> => {
 
 const updateBook = async (
   id: string,
-  payload: Partial<IBook>,
+  bookData: Partial<IBook>,
 ): Promise<IBook | null> => {
-  const result = await Book.findOneAndUpdate({ _id: id }, payload, {
+  const result = await Book.findOneAndUpdate({ _id: id }, bookData, {
     new: true,
   }).populate('author');
 
