@@ -50,7 +50,6 @@ const getAllAdmins = async (
     andConditions.length > 0 ? { $and: andConditions } : {};
 
   const result = await Admin.find(whereConditions)
-    .populate('manageBooks')
     .sort(sortConditions)
     .skip(skip)
     .limit(limit);
@@ -68,7 +67,7 @@ const getAllAdmins = async (
 };
 
 const getAdmin = async (id: string): Promise<IAdmin | null> => {
-  const result = await Admin.findOne({ id }).populate('manageBooks');
+  const result = await Admin.findOne({ id });
 
   return result;
 };
@@ -121,7 +120,7 @@ const updateAdmin = async (
   // Update and return the admin document
   const result = await Admin.findOneAndUpdate({ id }, updatedAdminData, {
     new: true,
-  }).populate('manageBooks');
+  });
 
   return result;
 };
