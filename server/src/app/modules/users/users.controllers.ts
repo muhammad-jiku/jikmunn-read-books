@@ -6,7 +6,8 @@ import { IUser } from './users.interfaces';
 import { UserServices } from './users.services';
 
 const createCustomer = catchAsync(async (req: Request, res: Response) => {
-  const { customer, ...userData } = req.body;
+  const { customer, ...userData } = await req.body;
+
   const result = await UserServices.createCustomer(customer, userData);
 
   sendResponse<IUser>(res, {
@@ -18,7 +19,8 @@ const createCustomer = catchAsync(async (req: Request, res: Response) => {
 });
 
 const createAuthor = catchAsync(async (req: Request, res: Response) => {
-  const { author, ...userData } = req.body;
+  const { author, ...userData } = await req.body;
+
   const result = await UserServices.createAuthor(author, userData);
 
   sendResponse<IUser>(res, {
@@ -30,7 +32,8 @@ const createAuthor = catchAsync(async (req: Request, res: Response) => {
 });
 
 const createAdmin = catchAsync(async (req: Request, res: Response) => {
-  const { admin, ...userData } = req.body;
+  const { admin, ...userData } = await req.body;
+
   const result = await UserServices.createAdmin(admin, userData);
 
   sendResponse<IUser>(res, {
