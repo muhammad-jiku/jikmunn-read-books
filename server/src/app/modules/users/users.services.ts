@@ -99,11 +99,11 @@ const createAuthor = async (
     if (!newAuthor.length) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        'Failed to create faculty profile!',
+        'Failed to create author profile!',
       );
     }
 
-    // set faculty id
+    // set author id
     user.author = newAuthor[0]._id;
 
     const newUser = await User.create([user], { session });

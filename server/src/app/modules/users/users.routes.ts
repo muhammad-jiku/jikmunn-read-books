@@ -13,7 +13,7 @@ router
   );
 
 router
-  .route('/create-faculty')
+  .route('/create-author')
   .post(
     validateRequest(UserValidations.createAuthorZodSchema),
     UserControllers.createAuthor,
