@@ -1,4 +1,5 @@
 import { Model, Schema } from 'mongoose';
+import { IBook } from '../books/books.interfaces';
 
 interface UserName {
   firstName: string;
@@ -7,17 +8,17 @@ interface UserName {
 }
 
 interface Reading {
-  book: Schema.Types.ObjectId;
+  book: Schema.Types.ObjectId | IBook;
   status: 'reading';
 }
 
 interface PlanToRead {
-  book: Schema.Types.ObjectId;
+  book: Schema.Types.ObjectId | IBook;
   status: 'plan to read';
 }
 
 interface Finished {
-  book: Schema.Types.ObjectId;
+  book: Schema.Types.ObjectId | IBook;
   status: 'finished';
 }
 
@@ -30,7 +31,7 @@ export interface ICustomer {
   contactNo: string;
   presentAddress: string;
   permanentAddress: string;
-  wishlist?: Schema.Types.ObjectId[]; // Array of book references
+  wishlist?: Schema.Types.ObjectId[] | IBook[]; // Array of book references
   currentlyReading?: Reading[]; // Books currently being read
   planToRead?: PlanToRead[]; // Books planned to be read
   finishedReading?: Finished[]; // Finished books
