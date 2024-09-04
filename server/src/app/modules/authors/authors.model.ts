@@ -31,7 +31,7 @@ const authorSchema = new Schema<IAuthor, IAuthorModel>(
       enum: gender,
     },
     dateOfBirth: {
-      type: String,
+      type: Date,
     },
     email: {
       type: String,

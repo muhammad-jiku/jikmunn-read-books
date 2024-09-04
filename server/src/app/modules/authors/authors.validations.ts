@@ -18,7 +18,7 @@ const updateAuthorZodSchema = z.object({
       contactNo: z.string().optional(),
       presentAddress: z.string().optional(),
       permanentAddress: z.string().optional(),
-      manageBooks: z.string().optional(),
+      manageBooks: z.array(z.string()).optional(),
       profileImage: z.string().optional(),
     })
     .strict(),

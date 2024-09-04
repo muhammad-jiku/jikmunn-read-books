@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
-import mongoose, { SortOrder } from 'mongoose';
+import mongoose, { Schema, SortOrder } from 'mongoose';
 import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
@@ -83,7 +83,7 @@ const updateAuthor = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Author information not found!');
   }
 
-  const { name, ...authorData } = payload;
+  const { name, manageBooks, ...authorData } = payload;
 
   // Prepare conditions for checking unique fields
   const uniqueConditions = [];
@@ -108,7 +108,7 @@ const updateAuthor = async (
     }
   }
 
-  // Prepare update data
+  // Prepare the updated author data
   const updatedAuthorData: Partial<IAuthor> = { ...authorData };
 
   if (name && Object.keys(name).length > 0) {
@@ -116,6 +116,14 @@ const updateAuthor = async (
       const nameKey = `name.${key}` as keyof Partial<IAuthor>;
       (updatedAuthorData as any)[nameKey] = name[key as keyof typeof name];
     });
+  }
+
+  // Add new books to manageBooks array
+  if (manageBooks && manageBooks.length > 0) {
+    updatedAuthorData.manageBooks = [
+      ...(existingAuthor.manageBooks as Schema.Types.ObjectId[]),
+      ...manageBooks,
+    ];
   }
 
   // Update and return the author document

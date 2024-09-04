@@ -1,5 +1,4 @@
 import { Model, Schema } from 'mongoose';
-import { IBook } from '../books/books.interfaces';
 
 interface UserName {
   firstName: string;
@@ -11,12 +10,12 @@ export interface IAuthor {
   id: string;
   name: UserName; //embedded object
   gender: 'male' | 'female';
-  dateOfBirth: string;
+  dateOfBirth: Date;
   email: string;
   contactNo: string;
   presentAddress: string;
   permanentAddress: string;
-  manageBooks?: Schema.Types.ObjectId[] | IBook[]; // Array of book references
+  manageBooks?: Schema.Types.ObjectId[]; // Array of book references
   profileImage?: string;
 }
 
