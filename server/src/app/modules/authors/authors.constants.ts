@@ -14,5 +14,4 @@ export const authorFilterableFields = [
   'email',
   'contactNo',
   'presentAddress',
-  'designation',
 ];
