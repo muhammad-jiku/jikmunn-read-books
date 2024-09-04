@@ -6,7 +6,7 @@ import { UserValidations } from './users.validations';
 const router = express.Router();
 
 router
-  .route('/create-student')
+  .route('/create-customer')
   .post(
     validateRequest(UserValidations.createCustomerZodSchema),
     UserControllers.createCustomer,

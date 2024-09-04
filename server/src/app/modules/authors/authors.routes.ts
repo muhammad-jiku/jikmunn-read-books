@@ -15,10 +15,7 @@ router
     auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
     AuthorControllers.updateAuthor,
   )
-  .delete(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    AuthorControllers.deleteAuthor,
-  );
+  .delete(auth(USER_ROLES.ADMIN), AuthorControllers.deleteAuthor);
 
 router.route('/').get(auth(USER_ROLES.ADMIN), AuthorControllers.getAllAuthors);
 

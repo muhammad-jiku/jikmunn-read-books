@@ -41,11 +41,11 @@ const createCustomer = async (
     if (!newCustomer.length) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        'Failed to create student profile!',
+        'Failed to create customer profile!',
       );
     }
 
-    // set student id
+    // set customer id
     user.customer = newCustomer[0]._id;
 
     const newUser = await User.create([user], { session });
