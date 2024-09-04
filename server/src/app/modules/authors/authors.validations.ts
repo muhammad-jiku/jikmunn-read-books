@@ -13,7 +13,7 @@ const updateAuthorZodSchema = z.object({
         .strict()
         .optional(),
       gender: z.enum([...gender] as [string, ...string[]]).optional(),
-      dateOfBirth: z.string().optional(),
+      dateOfBirth: z.date().optional(),
       email: z.string().email().optional(),
       contactNo: z.string().optional(),
       presentAddress: z.string().optional(),
