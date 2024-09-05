@@ -16,4 +16,17 @@ const getAllManageBooks = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const ManageBookControllers = { getAllManageBooks };
+const getAllManageBook = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+
+  const result = await ManageBookServices.getAllManageBook(user);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'All books data retrieved successfully!',
+    data: result,
+  });
+});
+
+export const ManageBookControllers = { getAllManageBooks, getAllManageBook };

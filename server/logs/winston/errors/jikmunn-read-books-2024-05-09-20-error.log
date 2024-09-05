@@ -1,0 +1,4 @@
+Thu Sep 05 2024 20:17:50 } [jikmunn-read-books] error: E11000 duplicate key error collection: dataStorage.authors index: email_1 dup key: { email: "ericmagneto@gmail.com" }
+Thu Sep 05 2024 20:23:6 } [jikmunn-read-books] error: Cannot read properties of undefined (reading 'id')
+Thu Sep 05 2024 20:25:48 } [jikmunn-read-books] error: Sorry this author does not exist!
+Thu Sep 05 2024 20:26:52 } [jikmunn-read-books] error: Sorry this author does not exist!
