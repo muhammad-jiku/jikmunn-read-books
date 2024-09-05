@@ -15,7 +15,7 @@ const getAllManageBooks = async (): Promise<IManageBooks[] | null> => {
 
 const getAllManageBook = async (
   user: JwtPayload | null,
-): Promise<IManageBooks[] | null> => {
+): Promise<IManageBooks | null> => {
   const isAuthorExist = await Author.findOne({ id: user!.userId });
   if (!isAuthorExist) {
     throw new ApiError(
@@ -24,7 +24,7 @@ const getAllManageBook = async (
     );
   }
 
-  const result = await ManageBook.find({ author: isAuthorExist!._id })
+  const result = await ManageBook.findOne({ author: isAuthorExist!._id })
     .populate('author')
     .populate('books.book');
 

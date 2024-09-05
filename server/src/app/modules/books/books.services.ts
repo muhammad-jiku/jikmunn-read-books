@@ -150,10 +150,85 @@ const updateBook = async (
   return result;
 };
 
-const deleteBook = async (id: string): Promise<IBook | null> => {
-  const result = await Book.findByIdAndDelete(id);
+// const deleteBook = async (id: string): Promise<IBook | null> => {
+//   const result = await Book.findByIdAndDelete(id);
 
-  return result;
+//   return result;
+// };
+
+// const deleteAuthor = async (id: string): Promise<IAuthor | null> => {
+//   // check if the author is exist
+//   const isExist = await Author.findOne({ id });
+
+//   if (!isExist) {
+//     throw new ApiError(httpStatus.NOT_FOUND, 'Author not found !');
+//   }
+
+//   const session = await mongoose.startSession();
+
+//   try {
+//     session.startTransaction();
+
+//     // delete author first
+//     const author = await Author.findOneAndDelete({ id }, { session });
+//     if (!author) {
+//       throw new ApiError(404, 'Failed to delete author');
+//     }
+
+//     //delete user
+//     await User.deleteOne({ id });
+//     await session.commitTransaction();
+//     await session.endSession();
+
+//     return author;
+//   } catch (error) {
+//     await session.abortTransaction();
+//     throw error;
+//   }
+// };
+
+const deleteBook = async (id: string): Promise<IBook | null> => {
+  // check if the book exists
+  const isBookExist = await Book.findOne({ _id: id });
+
+  if (!isBookExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Book not found !');
+  }
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    // delete book from the list first
+    const manageBooks = await ManageBook.findOne(
+      { author: isBookExist!.author },
+      null, // No projection needed
+      { session }, // Correctly passing session here
+    );
+
+    if (!manageBooks) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Sorry author not found!');
+    }
+
+    // Remove the book from the author's books list
+    manageBooks.books = manageBooks.books.filter(
+      book => book.book.toString() !== isBookExist._id.toString(),
+    );
+
+    // Save the updated manageBooks document (pass session in options, not in the document)
+    await manageBooks.save({ session });
+
+    //delete user
+    await Book.deleteOne({ _id: isBookExist._id }, { session });
+    await session.commitTransaction();
+    await session.endSession();
+
+    return isBookExist;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  }
 };
 
 export const BookServices = {
