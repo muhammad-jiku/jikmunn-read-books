@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import mongoose, { SortOrder } from 'mongoose';
@@ -17,6 +18,7 @@ const createBook = async (bookData: IBook): Promise<IBook | null> => {
   try {
     session.startTransaction();
 
+    console.log(bookData);
     // Check if the author exists
     const isAuthorExist = await Author.findOne({ _id: bookData.author });
     if (!isAuthorExist) {
@@ -25,9 +27,12 @@ const createBook = async (bookData: IBook): Promise<IBook | null> => {
         'Sorry, this author does not exist!',
       );
     }
-
+    // console.log('session ', session);
+    console.log('is author exist ', isAuthorExist);
     // Create the new book
     const newBook = await Book.create([bookData], { session });
+
+    console.log('new book ', newBook);
     if (!newBook.length) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create new book!');
     }

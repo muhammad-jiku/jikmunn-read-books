@@ -3,11 +3,6 @@ import { IBook, IBookModel } from './books.interfaces';
 
 const bookSchema = new Schema<IBook, IBookModel>(
   {
-    id: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     title: {
       type: String,
       required: true,
@@ -23,12 +18,11 @@ const bookSchema = new Schema<IBook, IBookModel>(
       required: true,
     },
     publicationDate: {
-      type: Date,
+      type: String,
       required: true,
     },
     publisher: {
       type: String,
-
       required: true,
     },
     pages: {

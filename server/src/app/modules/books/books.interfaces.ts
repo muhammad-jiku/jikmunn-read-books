@@ -2,11 +2,10 @@ import { Model, Schema } from 'mongoose';
 import { IAuthor } from '../authors/authors.interfaces';
 
 export interface IBook {
-  id: string;
   title: string;
   subtitle?: string;
   author: Schema.Types.ObjectId | IAuthor;
-  publicationDate: Date;
+  publicationDate: string;
   publisher: string;
   pages: number;
   genre: string;

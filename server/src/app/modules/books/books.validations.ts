@@ -2,9 +2,6 @@ import { z } from 'zod';
 
 const createBookZodSchema = z.object({
   body: z.object({
-    id: z.string({
-      required_error: 'Book id must be provided',
-    }),
     title: z.string({
       required_error: 'Book title must be provided',
     }),
@@ -12,7 +9,7 @@ const createBookZodSchema = z.object({
     author: z.string({
       required_error: 'Book author must be provided',
     }),
-    publicationDate: z.date({
+    publicationDate: z.string({
       required_error: 'Book publication date must be provided',
     }),
     publisher: z.string({
@@ -39,11 +36,10 @@ const createBookZodSchema = z.object({
 const updateBookZodSchema = z.object({
   body: z
     .object({
-      id: z.string().optional(),
       title: z.string().optional(),
       subtitle: z.string().optional(),
       author: z.string().optional(),
-      publicationDate: z.date().optional(),
+      publicationDate: z.string().optional(),
       publisher: z.string().optional(),
       pages: z.number().optional(),
       genre: z.string().optional(),
