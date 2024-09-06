@@ -1,6 +1,6 @@
 import { Model, Schema } from 'mongoose';
-import { ICustomerBooks } from '../customersBooks/customersBooks.interfaces';
-import { ICustomerWishlists } from '../customersWishlists/customersWishlists.interfaces';
+import { ICustomerBookList } from '../customerBookLists/customerBookLists.interfaces';
+import { ICustomerBookWishlist } from '../customerBookWishlists/customerBookWishlists.interfaces';
 
 interface UserName {
   firstName: string;
@@ -17,8 +17,8 @@ export interface ICustomer {
   contactNo: string;
   presentAddress: string;
   permanentAddress: string;
-  wishlist?: Schema.Types.ObjectId | ICustomerWishlists; // Books wishlist references
-  books?: Schema.Types.ObjectId | ICustomerBooks; // Reading, Plan to read, Finished books
+  wishlist?: Schema.Types.ObjectId | ICustomerBookWishlist; // Books wishlist references
+  books?: Schema.Types.ObjectId | ICustomerBookList; // Reading, Plan to read, Finished books
   profileImage?: string;
 }
 

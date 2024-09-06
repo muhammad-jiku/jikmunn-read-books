@@ -6,13 +6,13 @@ import ApiError from '../../../errors/ApiError';
 import { IBook } from '../books/books.interfaces';
 import { Book } from '../books/books.model';
 import { Customer } from '../customers/customers.model';
-import { ICustomerWishlists } from './customersWishlists.interfaces';
-import { CustomersWishlist } from './customersWishlists.model';
+import { ICustomerBookWishlist } from './customerBookWishlists.interfaces';
+import { CustomerBookWishlist } from './customerBookWishlists.model';
 
-const createCustomersWishlist = async (
+const createCustomerBookWishlist = async (
   user: JwtPayload | null,
-  payload: ICustomerWishlists,
-): Promise<ICustomerWishlists | null> => {
+  payload: ICustomerBookWishlist,
+): Promise<ICustomerBookWishlist | null> => {
   let newWishlistData = null;
   const session = await mongoose.startSession();
   try {
@@ -39,7 +39,7 @@ const createCustomersWishlist = async (
     };
 
     // Create the new book
-    const newWishlist = await CustomersWishlist.create([wishlistData], {
+    const newWishlist = await CustomerBookWishlist.create([wishlistData], {
       session,
     });
 
@@ -68,7 +68,7 @@ const createCustomersWishlist = async (
 
   // Populate the author field before returning the new book data
   if (newWishlistData) {
-    newWishlistData = await CustomersWishlist.findById(newWishlistData._id)
+    newWishlistData = await CustomerBookWishlist.findById(newWishlistData._id)
       .populate('customer')
       .populate('books.book');
   }
@@ -76,19 +76,19 @@ const createCustomersWishlist = async (
   return newWishlistData;
 };
 
-const getAllCustomersWishlists = async (): Promise<
-  ICustomerWishlists[] | null
+const getAllCustomerBookWishlists = async (): Promise<
+  ICustomerBookWishlist[]
 > => {
-  const result = await CustomersWishlist.find()
+  const result = await CustomerBookWishlist.find()
     .populate('customer')
     .populate('books.book');
 
   return result;
 };
 
-const getAllCustomersWishlist = async (
+const getAllCustomerBookWishlist = async (
   user: JwtPayload | null,
-): Promise<ICustomerWishlists | null> => {
+): Promise<ICustomerBookWishlist[] | null> => {
   const isCustomerExist = await Customer.findOne({ id: user!.userId });
   if (!isCustomerExist) {
     throw new ApiError(
@@ -97,7 +97,7 @@ const getAllCustomersWishlist = async (
     );
   }
 
-  const result = await CustomersWishlist.findOne({
+  const result = await CustomerBookWishlist.find({
     customer: isCustomerExist!._id,
   })
     .populate('customer')
@@ -106,7 +106,7 @@ const getAllCustomersWishlist = async (
   return result;
 };
 
-const removeBookFromWishlist = async (
+const removeBookFromCustomerBookWishlist = async (
   user: JwtPayload | null,
   id: string,
 ): Promise<IBook | null> => {
@@ -131,7 +131,7 @@ const removeBookFromWishlist = async (
     session.startTransaction();
 
     // delete book from the list first
-    const manageWishlist = await CustomersWishlist.findOne(
+    const manageWishlist = await CustomerBookWishlist.findOne(
       { customer: isCustomerExist!._id },
       null, // No projection needed
       { session }, // Correctly passing session here
@@ -159,9 +159,18 @@ const removeBookFromWishlist = async (
   }
 };
 
-export const CustomersWishlistsServices = {
-  createCustomersWishlist,
-  getAllCustomersWishlists,
-  getAllCustomersWishlist,
-  removeBookFromWishlist,
+const deleteBookFromCustomeBookWishList = async (
+  id: string,
+): Promise<ICustomerBookWishlist | null> => {
+  const result = await CustomerBookWishlist.findByIdAndDelete(id);
+
+  return result;
+};
+
+export const CustomerBookWishlistServices = {
+  createCustomerBookWishlist,
+  getAllCustomerBookWishlists,
+  getAllCustomerBookWishlist,
+  removeBookFromCustomerBookWishlist,
+  deleteBookFromCustomeBookWishList,
 };

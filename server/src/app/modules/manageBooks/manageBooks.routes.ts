@@ -9,11 +9,12 @@ router
   .route('/me')
   .get(
     auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    ManageBookControllers.getAllManageBook,
+    ManageBookControllers.getAllManageBooksByAuthor,
   );
 
 router
   .route('/')
-  .get(auth(USER_ROLES.ADMIN), ManageBookControllers.getAllManageBooks);
+  .get(auth(USER_ROLES.ADMIN), ManageBookControllers.getAllManageBooks)
+  .delete(auth(USER_ROLES.ADMIN), ManageBookControllers.deleteManageBook);
 
 export const ManageBookRoutes = router;

@@ -2,20 +2,21 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { catchAsync } from '../../../shared/catchAsync';
 import { sendResponse } from '../../../shared/sendResponse';
-import { ICustomerBooks } from './customersBooks.interfaces';
-import { CustomerBooksServices } from './customersBooks.services';
+import { IBook } from '../books/books.interfaces';
+import { ICustomerBookList } from './customerBookLists.interfaces';
+import { CustomerBookListServices } from './customerBookLists.services';
 
-const updateCustomerBooksStatus = catchAsync(
+const updateCustomerBookListStatus = catchAsync(
   async (req: Request, res: Response) => {
     const user = req.user;
     const customersBooksWishlists = await req.body;
 
-    const result = await CustomerBooksServices.updateCustomerBooksStatus(
+    const result = await CustomerBookListServices.updateCustomerBookListStatus(
       user,
       customersBooksWishlists,
     );
 
-    sendResponse<ICustomerBooks>(res, {
+    sendResponse<ICustomerBookList>(res, {
       statusCode: httpStatus.CREATED,
       success: true,
       message: 'All books data added to wishlist successfully!',
@@ -26,9 +27,9 @@ const updateCustomerBooksStatus = catchAsync(
 
 const getAllCustomerBookLists = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await CustomerBooksServices.getAllCustomerBookLists();
+    const result = await CustomerBookListServices.getAllCustomerBookLists();
 
-    sendResponse<ICustomerBooks[]>(res, {
+    sendResponse<ICustomerBookList[]>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: 'All books data retrieved successfully!',
@@ -37,14 +38,14 @@ const getAllCustomerBookLists = catchAsync(
   },
 );
 
-const getAllCustomerBooksByStatus = catchAsync(
+const getAllCustomerBookListByStatus = catchAsync(
   async (req: Request, res: Response) => {
     const user = req.user;
 
     const result =
-      await CustomerBooksServices.getAllCustomerBooksByStatus(user);
+      await CustomerBookListServices.getAllCustomerBookListByStatus(user);
 
-    sendResponse(res, {
+    sendResponse<ICustomerBookList[]>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: 'All books data retrieved successfully!',
@@ -58,12 +59,12 @@ const removeCustomerBookFromList = catchAsync(
     const user = req.user;
     const { id } = await req.body;
 
-    const result = await CustomerBooksServices.removeCustomerBookFromList(
+    const result = await CustomerBookListServices.removeCustomerBookFromList(
       user,
       id,
     );
 
-    sendResponse(res, {
+    sendResponse<IBook>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: 'All books data retrieved successfully!',
@@ -72,9 +73,26 @@ const removeCustomerBookFromList = catchAsync(
   },
 );
 
-export const CustomerBookListsControllers = {
-  updateCustomerBooksStatus,
+const deleteCustomerBookFromList = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = await req.body;
+
+    const result =
+      await CustomerBookListServices.deleteCustomerBookFromList(id);
+
+    sendResponse<ICustomerBookList>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Book data list deleted successfully!',
+      data: result,
+    });
+  },
+);
+
+export const CustomerBookListControllers = {
+  updateCustomerBookListStatus,
   getAllCustomerBookLists,
-  getAllCustomerBooksByStatus,
+  getAllCustomerBookListByStatus,
   removeCustomerBookFromList,
+  deleteCustomerBookFromList,
 };

@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
-import { IManageBooks, IManageBooksModel } from './manageBooks.interfaces';
+import { IManageBook, IManageBookModel } from './manageBooks.interfaces';
 
-const manageBooksSchema = new Schema<IManageBooks, IManageBooksModel>(
+const manageBookSchema = new Schema<IManageBook, IManageBookModel>(
   {
     author: {
       type: Schema.Types.ObjectId,
@@ -30,7 +30,7 @@ const manageBooksSchema = new Schema<IManageBooks, IManageBooksModel>(
   },
 );
 
-export const ManageBook = model<IManageBooks, IManageBooksModel>(
+export const ManageBook = model<IManageBook, IManageBookModel>(
   'ManageBook',
-  manageBooksSchema,
+  manageBookSchema,
 );

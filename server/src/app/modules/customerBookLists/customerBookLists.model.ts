@@ -1,11 +1,14 @@
 import { model, Schema } from 'mongoose';
-import { status } from './customersBooks.constants';
+import { status } from './customerBookLists.constants';
 import {
-  ICustomerBooks,
-  ICustomerBooksModel,
-} from './customersBooks.interfaces';
+  ICustomerBookList,
+  ICustomerBookListModel,
+} from './customerBookLists.interfaces';
 
-const customersBooksSchema = new Schema<ICustomerBooks, ICustomerBooksModel>(
+const customerBookListSchema = new Schema<
+  ICustomerBookList,
+  ICustomerBookListModel
+>(
   {
     customer: {
       type: Schema.Types.ObjectId,
@@ -39,7 +42,7 @@ const customersBooksSchema = new Schema<ICustomerBooks, ICustomerBooksModel>(
   },
 );
 
-export const CustomersBooks = model<ICustomerBooks, ICustomerBooksModel>(
-  'CustomersBook',
-  customersBooksSchema,
-);
+export const CustomerBookList = model<
+  ICustomerBookList,
+  ICustomerBookListModel
+>('CustomerBookList', customerBookListSchema);

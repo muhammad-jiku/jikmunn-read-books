@@ -1,12 +1,12 @@
 import { model, Schema } from 'mongoose';
 import {
-  ICustomerWishlists,
-  ICustomerWishlistsModel,
-} from './customersWishlists.interfaces';
+  ICustomerBookWishlist,
+  ICustomerBookWishlistModel,
+} from './customerBookWishlists.interfaces';
 
-const customersWishlistsSchema = new Schema<
-  ICustomerWishlists,
-  ICustomerWishlistsModel
+const customerBookWishlistSchema = new Schema<
+  ICustomerBookWishlist,
+  ICustomerBookWishlistModel
 >(
   {
     customer: {
@@ -36,7 +36,7 @@ const customersWishlistsSchema = new Schema<
   },
 );
 
-export const CustomersWishlist = model<
-  ICustomerWishlists,
-  ICustomerWishlistsModel
->('CustomersWishlist', customersWishlistsSchema);
+export const CustomerBookWishlist = model<
+  ICustomerBookWishlist,
+  ICustomerBookWishlistModel
+>('CustomerBookWishlist', customerBookWishlistSchema);

@@ -6,7 +6,7 @@ import { ICustomer } from '../customers/customers.interfaces';
 type BookStatus = 'reading' | 'plan to read' | 'finished';
 
 // Define the interface for CustomerBooks schema
-export interface ICustomerBooks {
+export interface ICustomerBookList {
   customer: Schema.Types.ObjectId | ICustomer; // Reference to the customer
   books: {
     book: Schema.Types.ObjectId | IBook; // Reference to the book
@@ -15,7 +15,7 @@ export interface ICustomerBooks {
   }[];
 }
 
-export type ICustomerBooksModel = Model<
-  ICustomerBooks,
+export type ICustomerBookListModel = Model<
+  ICustomerBookList,
   Record<string, unknown>
 >;

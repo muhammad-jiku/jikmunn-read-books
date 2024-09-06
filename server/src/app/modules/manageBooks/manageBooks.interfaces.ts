@@ -2,7 +2,7 @@ import { Model, Schema } from 'mongoose';
 import { IAuthor } from '../authors/authors.interfaces';
 import { IBook } from '../books/books.interfaces';
 
-export interface IManageBooks {
+export interface IManageBook {
   author: Schema.Types.ObjectId | IAuthor; // Reference to the Author
   books: {
     book: Schema.Types.ObjectId | IBook; // Reference to the Book or the Book details
@@ -10,4 +10,4 @@ export interface IManageBooks {
   }[];
 }
 
-export type IManageBooksModel = Model<IManageBooks, Record<string, unknown>>;
+export type IManageBookModel = Model<IManageBook, Record<string, unknown>>;

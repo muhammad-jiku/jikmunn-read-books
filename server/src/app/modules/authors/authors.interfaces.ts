@@ -1,5 +1,5 @@
 import { Model, Schema } from 'mongoose';
-import { IManageBooks } from '../manageBooks/manageBooks.interfaces';
+import { IManageBook } from '../manageBooks/manageBooks.interfaces';
 
 interface UserName {
   firstName: string;
@@ -16,7 +16,7 @@ export interface IAuthor {
   contactNo: string;
   presentAddress: string;
   permanentAddress: string;
-  manageBook?: Schema.Types.ObjectId | IManageBooks; // manage books references
+  manageBook?: Schema.Types.ObjectId | IManageBook; // manage books references
   profileImage?: string;
 }
 

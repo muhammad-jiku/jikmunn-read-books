@@ -53,9 +53,12 @@ const customerSchema = new Schema<ICustomer, ICustomerModel>(
     },
     wishlist: {
       type: Schema.Types.ObjectId,
-      ref: 'CustomersWishlist',
+      ref: 'CustomerBookWishlist',
     },
-    books: { type: Schema.Types.ObjectId, ref: 'CustomersBook' },
+    books: {
+      type: Schema.Types.ObjectId,
+      ref: 'CustomerBookList',
+    },
     profileImage: {
       type: String,
     },

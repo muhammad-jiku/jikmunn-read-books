@@ -6,14 +6,14 @@ import ApiError from '../../../errors/ApiError';
 import { IBook } from '../books/books.interfaces';
 import { Book } from '../books/books.model';
 import { Customer } from '../customers/customers.model';
-import { ICustomerBooks } from './customersBooks.interfaces';
-import { CustomersBooks } from './customersBooks.model';
+import { ICustomerBookList } from './customerBookLists.interfaces';
+import { CustomerBookList } from './customerBookLists.model';
 
 // Function to update the book status for a customer
-const updateCustomerBooksStatus = async (
+const updateCustomerBookListStatus = async (
   user: JwtPayload | null,
-  payload: ICustomerBooks,
-): Promise<ICustomerBooks | null> => {
+  payload: ICustomerBookList,
+): Promise<ICustomerBookList | null> => {
   // Check if the customer exists
   const isCustomerExist = await Customer.findOne({ id: user!.userId });
   if (!isCustomerExist) {
@@ -30,7 +30,7 @@ const updateCustomerBooksStatus = async (
     session.startTransaction();
 
     // Find the customer's books list
-    let customerBookLists = await CustomersBooks.findOne({
+    let customerBookLists = await CustomerBookList.findOne({
       customer: isCustomerExist._id,
     }).session(session);
 
@@ -48,7 +48,7 @@ const updateCustomerBooksStatus = async (
 
     // If no record exists for the customer, create a new one
     if (!customerBookLists) {
-      const createdBooks = await CustomersBooks.create([listData], {
+      const createdBooks = await CustomerBookList.create([listData], {
         session,
       });
       customerBookLists = createdBooks[0];
@@ -105,7 +105,7 @@ const updateCustomerBooksStatus = async (
 
   // Populate customer and books before returning the updated data
   if (newCustomerBooksData) {
-    newCustomerBooksData = await CustomersBooks.findById(
+    newCustomerBooksData = await CustomerBookList.findById(
       newCustomerBooksData._id,
     )
       .populate('customer')
@@ -115,17 +115,19 @@ const updateCustomerBooksStatus = async (
   return newCustomerBooksData;
 };
 
-const getAllCustomerBookLists = async (): Promise<ICustomerBooks[] | null> => {
-  const result = await CustomersBooks.find()
+const getAllCustomerBookLists = async (): Promise<
+  ICustomerBookList[] | null
+> => {
+  const result = await CustomerBookList.find()
     .populate('customer')
     .populate('books.book');
 
   return result;
 };
 
-const getAllCustomerBooksByStatus = async (
+const getAllCustomerBookListByStatus = async (
   user: JwtPayload | null,
-): Promise<ICustomerBooks | null> => {
+): Promise<ICustomerBookList[] | null> => {
   const isCustomerExist = await Customer.findOne({ id: user!.userId });
   if (!isCustomerExist) {
     throw new ApiError(
@@ -134,7 +136,7 @@ const getAllCustomerBooksByStatus = async (
     );
   }
 
-  const result = await CustomersBooks.findOne({
+  const result = await CustomerBookList.find({
     customer: isCustomerExist!._id,
   })
     .populate('customer')
@@ -168,7 +170,7 @@ const removeCustomerBookFromList = async (
     session.startTransaction();
 
     // delete book from the list first
-    const manageList = await CustomersBooks.findOne(
+    const manageList = await CustomerBookList.findOne(
       { customer: isCustomerExist!._id },
       null, // No projection needed
       { session }, // Correctly passing session here
@@ -196,9 +198,18 @@ const removeCustomerBookFromList = async (
   }
 };
 
-export const CustomerBooksServices = {
-  updateCustomerBooksStatus,
+const deleteCustomerBookFromList = async (
+  id: string,
+): Promise<ICustomerBookList | null> => {
+  const result = await CustomerBookList.findByIdAndDelete(id);
+
+  return result;
+};
+
+export const CustomerBookListServices = {
+  updateCustomerBookListStatus,
   getAllCustomerBookLists,
-  getAllCustomerBooksByStatus,
+  getAllCustomerBookListByStatus,
   removeCustomerBookFromList,
+  deleteCustomerBookFromList,
 };

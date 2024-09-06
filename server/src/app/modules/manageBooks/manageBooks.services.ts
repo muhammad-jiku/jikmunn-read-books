@@ -2,10 +2,10 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
 import { Author } from '../authors/authors.model';
-import { IManageBooks } from './manageBooks.interfaces';
+import { IManageBook } from './manageBooks.interfaces';
 import { ManageBook } from './manageBooks.model';
 
-const getAllManageBooks = async (): Promise<IManageBooks[] | null> => {
+const getAllManageBooks = async (): Promise<IManageBook[] | null> => {
   const result = await ManageBook.find()
     .populate('author')
     .populate('books.book');
@@ -13,9 +13,9 @@ const getAllManageBooks = async (): Promise<IManageBooks[] | null> => {
   return result;
 };
 
-const getAllManageBook = async (
+const getAllManageBooksByAuthor = async (
   user: JwtPayload | null,
-): Promise<IManageBooks | null> => {
+): Promise<IManageBook[] | null> => {
   const isAuthorExist = await Author.findOne({ id: user!.userId });
   if (!isAuthorExist) {
     throw new ApiError(
@@ -24,14 +24,21 @@ const getAllManageBook = async (
     );
   }
 
-  const result = await ManageBook.findOne({ author: isAuthorExist!._id })
+  const result = await ManageBook.find({ author: isAuthorExist!._id })
     .populate('author')
     .populate('books.book');
 
   return result;
 };
 
+const deleteManageBook = async (id: string): Promise<IManageBook | null> => {
+  const result = await ManageBook.findByIdAndDelete(id);
+
+  return result;
+};
+
 export const ManageBookServices = {
   getAllManageBooks,
-  getAllManageBook,
+  getAllManageBooksByAuthor,
+  deleteManageBook,
 };
