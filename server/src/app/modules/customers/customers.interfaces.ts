@@ -1,26 +1,11 @@
 import { Model, Schema } from 'mongoose';
-import { IBook } from '../books/books.interfaces';
+import { ICustomerBooks } from '../customersBooks/customersBooks.interfaces';
 import { ICustomerWishlists } from '../customersWishlists/customersWishlists.interfaces';
 
 interface UserName {
   firstName: string;
   middleName?: string;
   lastName: string;
-}
-
-interface Reading {
-  book: Schema.Types.ObjectId | IBook;
-  status: 'reading';
-}
-
-interface PlanToRead {
-  book: Schema.Types.ObjectId | IBook;
-  status: 'plan to read';
-}
-
-interface Finished {
-  book: Schema.Types.ObjectId | IBook;
-  status: 'finished';
 }
 
 export interface ICustomer {
@@ -33,9 +18,7 @@ export interface ICustomer {
   presentAddress: string;
   permanentAddress: string;
   wishlist?: Schema.Types.ObjectId | ICustomerWishlists; // Books wishlist references
-  currentlyReading?: Reading[]; // Books currently being read
-  planToRead?: PlanToRead[]; // Books planned to be read
-  finishedReading?: Finished[]; // Finished books
+  books?: Schema.Types.ObjectId | ICustomerBooks; // Reading, Plan to read, Finished books
   profileImage?: string;
 }
 

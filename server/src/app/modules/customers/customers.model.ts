@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { gender, status } from './customers.constants';
+import { gender } from './customers.constants';
 import { ICustomer, ICustomerModel } from './customers.interfaces';
 
 const customerSchema = new Schema<ICustomer, ICustomerModel>(
@@ -55,48 +55,7 @@ const customerSchema = new Schema<ICustomer, ICustomerModel>(
       type: Schema.Types.ObjectId,
       ref: 'CustomersWishlist',
     },
-    currentlyReading: [
-      {
-        book: {
-          type: Schema.Types.ObjectId,
-          ref: 'Book',
-          required: true,
-        },
-        status: {
-          type: String,
-          enum: [status[0]],
-          required: true,
-        },
-      },
-    ],
-    planToRead: [
-      {
-        book: {
-          type: Schema.Types.ObjectId,
-          ref: 'Book',
-          required: true,
-        },
-        status: {
-          type: String,
-          enum: [status[1]],
-          required: true,
-        },
-      },
-    ],
-    finishedReading: [
-      {
-        book: {
-          type: Schema.Types.ObjectId,
-          ref: 'Book',
-          required: true,
-        },
-        status: {
-          type: String,
-          enum: [status[2]],
-          required: true,
-        },
-      },
-    ],
+    books: { type: Schema.Types.ObjectId, ref: 'CustomersBook' },
     profileImage: {
       type: String,
     },
