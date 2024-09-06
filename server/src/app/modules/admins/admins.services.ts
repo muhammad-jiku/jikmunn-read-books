@@ -141,7 +141,7 @@ const deleteAdmin = async (id: string): Promise<IAdmin | null> => {
     // delete admin first
     const admin = await Admin.findOneAndDelete({ id }, { session });
     if (!admin) {
-      throw new ApiError(404, 'Failed to delete admin');
+      throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete admin');
     }
 
     // delete user

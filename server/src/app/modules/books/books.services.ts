@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import mongoose, { SortOrder } from 'mongoose';
@@ -18,7 +17,6 @@ const createBook = async (bookData: IBook): Promise<IBook | null> => {
   try {
     session.startTransaction();
 
-    console.log(bookData);
     // Check if the author exists
     const isAuthorExist = await Author.findOne({ _id: bookData.author });
     if (!isAuthorExist) {
@@ -27,12 +25,10 @@ const createBook = async (bookData: IBook): Promise<IBook | null> => {
         'Sorry, this author does not exist!',
       );
     }
-    // console.log('session ', session);
-    console.log('is author exist ', isAuthorExist);
+
     // Create the new book
     const newBook = await Book.create([bookData], { session });
 
-    console.log('new book ', newBook);
     if (!newBook.length) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create new book!');
     }
@@ -56,6 +52,10 @@ const createBook = async (bookData: IBook): Promise<IBook | null> => {
       });
       await manageBooks.save({ session });
     }
+
+    isAuthorExist.manageBook = manageBooks._id.toString() as any;
+
+    await isAuthorExist!.save({ session });
 
     newBookData = newBook[0];
 
@@ -149,43 +149,6 @@ const updateBook = async (
 
   return result;
 };
-
-// const deleteBook = async (id: string): Promise<IBook | null> => {
-//   const result = await Book.findByIdAndDelete(id);
-
-//   return result;
-// };
-
-// const deleteAuthor = async (id: string): Promise<IAuthor | null> => {
-//   // check if the author is exist
-//   const isExist = await Author.findOne({ id });
-
-//   if (!isExist) {
-//     throw new ApiError(httpStatus.NOT_FOUND, 'Author not found !');
-//   }
-
-//   const session = await mongoose.startSession();
-
-//   try {
-//     session.startTransaction();
-
-//     // delete author first
-//     const author = await Author.findOneAndDelete({ id }, { session });
-//     if (!author) {
-//       throw new ApiError(404, 'Failed to delete author');
-//     }
-
-//     //delete user
-//     await User.deleteOne({ id });
-//     await session.commitTransaction();
-//     await session.endSession();
-
-//     return author;
-//   } catch (error) {
-//     await session.abortTransaction();
-//     throw error;
-//   }
-// };
 
 const deleteBook = async (id: string): Promise<IBook | null> => {
   // check if the book exists

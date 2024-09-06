@@ -51,12 +51,10 @@ const authorSchema = new Schema<IAuthor, IAuthorModel>(
       type: String,
       required: true,
     },
-    manageBooks: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Book',
-      },
-    ],
+    manageBook: {
+      type: Schema.Types.ObjectId,
+      ref: 'ManageBook',
+    },
     profileImage: {
       type: String,
     },

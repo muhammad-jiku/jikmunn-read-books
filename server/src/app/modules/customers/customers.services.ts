@@ -153,7 +153,7 @@ const deleteCustomer = async (id: string): Promise<ICustomer | null> => {
     //delete customer first
     const customer = await Customer.findOneAndDelete({ id }, { session });
     if (!customer) {
-      throw new ApiError(404, 'Failed to delete customer');
+      throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete customer');
     }
 
     //delete user

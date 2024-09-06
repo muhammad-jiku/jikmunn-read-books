@@ -76,7 +76,7 @@ const createAuthorZodSchema = z.object({
       permanentAddress: z.string({
         required_error: 'Permanent address is required',
       }),
-      manageBooks: z.string().optional(),
+      manageBook: z.string().optional(),
       profileImage: z.string().optional(),
     }),
   }),

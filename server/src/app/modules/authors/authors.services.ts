@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
-import mongoose, { Schema, SortOrder } from 'mongoose';
+import mongoose, { SortOrder } from 'mongoose';
 import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
+import { Book } from '../books/books.model';
+import { ManageBook } from '../manageBooks/manageBooks.model';
 import { User } from '../users/users.model';
 import { authorSearchableFields } from './authors.constants';
 import { IAuthor, IAuthorFilters } from './authors.interfaces';
@@ -50,7 +52,14 @@ const getAllAuthors = async (
     andConditions.length > 0 ? { $and: andConditions } : {};
 
   const result = await Author.find(whereConditions)
-    .populate('manageBooks')
+    .populate({
+      path: 'manageBook',
+      populate: [
+        {
+          path: 'books.book',
+        },
+      ],
+    })
     .sort(sortConditions)
     .skip(skip)
     .limit(limit);
@@ -68,7 +77,14 @@ const getAllAuthors = async (
 };
 
 const getAuthor = async (id: string): Promise<IAuthor | null> => {
-  const result = await Author.findOne({ id }).populate('manageBooks');
+  const result = await Author.findOne({ id }).populate({
+    path: 'manageBook',
+    populate: [
+      {
+        path: 'books.book',
+      },
+    ],
+  });
 
   return result;
 };
@@ -83,7 +99,7 @@ const updateAuthor = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Author information not found!');
   }
 
-  const { name, manageBooks, ...authorData } = payload;
+  const { name, ...authorData } = payload;
 
   // Prepare conditions for checking unique fields
   const uniqueConditions = [];
@@ -118,18 +134,17 @@ const updateAuthor = async (
     });
   }
 
-  // Add new books to manageBooks array
-  if (manageBooks && manageBooks.length > 0) {
-    updatedAuthorData.manageBooks = [
-      ...(existingAuthor.manageBooks as Schema.Types.ObjectId[]),
-      ...manageBooks,
-    ];
-  }
-
   // Update and return the author document
   const result = await Author.findOneAndUpdate({ id }, updatedAuthorData, {
     new: true,
-  }).populate('manageBooks');
+  }).populate({
+    path: 'manageBook',
+    populate: [
+      {
+        path: 'books.book',
+      },
+    ],
+  });
 
   return result;
 };
@@ -147,10 +162,34 @@ const deleteAuthor = async (id: string): Promise<IAuthor | null> => {
   try {
     session.startTransaction();
 
-    // delete author first
+    // delete author's book list first
+    const authorsBookList = await ManageBook.findOneAndDelete(
+      { author: isExist._id },
+      { session },
+    );
+    if (!authorsBookList) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Failed to delete author's book list",
+      );
+    }
+
+    // delete book then
+    const book = await Book.findOneAndDelete(
+      { author: isExist._id },
+      { session },
+    );
+    if (!book) {
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Failed to delete author's book!",
+      );
+    }
+
+    // delete author then
     const author = await Author.findOneAndDelete({ id }, { session });
     if (!author) {
-      throw new ApiError(404, 'Failed to delete author');
+      throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete author');
     }
 
     //delete user
