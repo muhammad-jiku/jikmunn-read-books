@@ -12,10 +12,9 @@ import { CustomersBooks } from './customersBooks.model';
 // Function to update the book status for a customer
 const updateCustomerBooksStatus = async (
   user: JwtPayload | null,
-  bookId: string, // Book ID
-  newStatus: 'reading' | 'plan to read' | 'finished', // The new status of the book
+  payload: ICustomerBooks,
 ): Promise<ICustomerBooks | null> => {
-  // Check if the author exists
+  // Check if the customer exists
   const isCustomerExist = await Customer.findOne({ id: user!.userId });
   if (!isCustomerExist) {
     throw new ApiError(
@@ -30,55 +29,69 @@ const updateCustomerBooksStatus = async (
   try {
     session.startTransaction();
 
-    // Find the customer’s books list
-    let customerBooks = await CustomersBooks.findOne({
+    // Find the customer's books list
+    let customerBookLists = await CustomersBooks.findOne({
       customer: isCustomerExist._id,
-    });
+    }).session(session);
+
+    // Iterate over the payload.books to structure the customer books data
+    const listBooks = payload.books.map(book => ({
+      book: book.book, // book.book should either be an ObjectId or IBook
+      status: book.status, // book.status should either be 'reading', 'plan to read', or 'finished'
+      addedAt: book.addedAt || new Date(), // Add current date if not provided
+    }));
+
+    const listData = {
+      customer: isCustomerExist._id.toString(),
+      books: listBooks,
+    };
 
     // If no record exists for the customer, create a new one
-    if (!customerBooks) {
-      customerBooks = new CustomersBooks({
-        customer: isCustomerExist._id,
-        books: [
-          {
-            book: bookId,
-            status: newStatus,
-          },
-        ],
+    if (!customerBookLists) {
+      const createdBooks = await CustomersBooks.create([listData], {
+        session,
       });
+      customerBookLists = createdBooks[0];
     } else {
-      // Check if the book already exists in the list
-      const bookIndex = customerBooks.books.findIndex(
-        entry => entry.book.toString() === bookId,
-      );
+      // Update the existing record
+      payload.books.forEach(bookPayload => {
+        const bookId = bookPayload.book;
+        const newStatus = bookPayload.status;
 
-      if (bookIndex > -1) {
-        // Book exists, update its status and update time
-        customerBooks.books[bookIndex].status = newStatus;
-      } else {
-        // If book doesn’t exist, add it with the new status
-        customerBooks.books.push({
-          book: bookId as any,
-          status: newStatus,
-        });
-      }
+        // Check if the book already exists in the list
+        const bookIndex = customerBookLists!.books.findIndex(
+          entry => entry.book.toString() === bookId.toString(),
+        );
+
+        if (bookIndex > -1) {
+          // Book exists, update its status
+          customerBookLists!.books[bookIndex].status = newStatus;
+        } else {
+          // If book doesn’t exist, add it with the new status
+          customerBookLists!.books.push({
+            book: bookId as any,
+            status: newStatus,
+            addedAt: new Date(),
+          });
+        }
+      });
+
+      // Save the updated document
+      await customerBookLists.save({ session });
     }
 
-    // Save the updated document
-    await customerBooks.save({ session });
-
-    if (!customerBooks) {
+    if (!customerBookLists) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
-        'Failed to create customer book lists!',
+        'Failed to create or update customer book list!',
       );
     }
 
-    isCustomerExist.books = customerBooks._id.toString() as any;
+    // Update the customer reference to the book list
+    isCustomerExist.books = customerBookLists._id.toString() as any;
+    await isCustomerExist.save({ session });
 
-    await isCustomerExist!.save({ session });
-
-    newCustomerBooksData = customerBooks;
+    newCustomerBooksData = customerBookLists;
 
     // Commit the transaction
     await session.commitTransaction();
@@ -90,7 +103,7 @@ const updateCustomerBooksStatus = async (
     throw error;
   }
 
-  // Populate the author field before returning the new book data
+  // Populate customer and books before returning the updated data
   if (newCustomerBooksData) {
     newCustomerBooksData = await CustomersBooks.findById(
       newCustomerBooksData._id,
