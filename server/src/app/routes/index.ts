@@ -4,6 +4,7 @@ import { AuthRoutes } from '../modules/auth/auth.routes';
 import { AuthorRoutes } from '../modules/authors/authors.routes';
 import { BookRoutes } from '../modules/books/books.routes';
 import { CustomerRoutes } from '../modules/customers/customers.routes';
+import { CustomersWishlistsRoutes } from '../modules/customersWishlists/customersWishlists.routes';
 import { ManageBookRoutes } from '../modules/manageBooks/manageBooks.routes';
 import { UserRoutes } from '../modules/users/users.routes';
 
@@ -33,6 +34,10 @@ const moduleRoutes = [
   {
     path: '/customers',
     route: CustomerRoutes,
+  },
+  {
+    path: '/customers-wishlists',
+    route: CustomersWishlistsRoutes,
   },
   {
     path: '/books',
