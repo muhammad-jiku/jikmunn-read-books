@@ -1,5 +1,6 @@
 import { Model, Schema } from 'mongoose';
 import { IBook } from '../books/books.interfaces';
+import { ICustomerWishlists } from '../customersWishlists/customersWishlists.interfaces';
 
 interface UserName {
   firstName: string;
@@ -31,7 +32,7 @@ export interface ICustomer {
   contactNo: string;
   presentAddress: string;
   permanentAddress: string;
-  wishlist?: Schema.Types.ObjectId[] | IBook[]; // Array of book references
+  wishlist?: Schema.Types.ObjectId | ICustomerWishlists; // Books wishlist references
   currentlyReading?: Reading[]; // Books currently being read
   planToRead?: PlanToRead[]; // Books planned to be read
   finishedReading?: Finished[]; // Finished books

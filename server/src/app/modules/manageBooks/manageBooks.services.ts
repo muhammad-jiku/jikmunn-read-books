@@ -31,4 +31,7 @@ const getAllManageBook = async (
   return result;
 };
 
-export const ManageBookServices = { getAllManageBooks, getAllManageBook };
+export const ManageBookServices = {
+  getAllManageBooks,
+  getAllManageBook,
+};

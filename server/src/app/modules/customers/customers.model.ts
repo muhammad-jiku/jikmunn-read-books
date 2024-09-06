@@ -51,12 +51,10 @@ const customerSchema = new Schema<ICustomer, ICustomerModel>(
       type: String,
       required: true,
     },
-    wishlist: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Book',
-      },
-    ],
+    wishlist: {
+      type: Schema.Types.ObjectId,
+      ref: 'CustomersWishlist',
+    },
     currentlyReading: [
       {
         book: {
