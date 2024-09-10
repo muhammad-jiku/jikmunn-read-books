@@ -5,6 +5,8 @@ import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
+import { CustomerBookList } from '../customerBookLists/customerBookLists.model';
+import { CustomerBookWishlist } from '../customerBookWishlists/customerBookWishlists.model';
 import { User } from '../users/users.model';
 import { customerSearchableFields } from './customers.constants';
 import { ICustomer, ICustomerFilters } from './customers.interfaces';
@@ -51,9 +53,7 @@ const getAllCustomers = async (
 
   const result = await Customer.find(whereConditions)
     .populate('wishlist')
-    .populate('currentlyReading')
-    .populate('planToRead')
-    .populate('FinishedReading')
+    .populate('books')
     .sort(sortConditions)
     .skip(skip)
     .limit(limit);
@@ -73,9 +73,7 @@ const getAllCustomers = async (
 const getCustomer = async (id: string): Promise<ICustomer | null> => {
   const result = await Customer.findOne({ id })
     .populate('wishlist')
-    .populate('currentlyReading')
-    .populate('planToRead')
-    .populate('FinishedReading');
+    .populate('books');
 
   return result;
 };
@@ -130,18 +128,16 @@ const updateCustomer = async (
     new: true,
   })
     .populate('wishlist')
-    .populate('currentlyReading')
-    .populate('planToRead')
-    .populate('FinishedReading');
+    .populate('books');
 
   return result;
 };
 
 const deleteCustomer = async (id: string): Promise<ICustomer | null> => {
   // check if the customer is exist
-  const isExist = await Customer.findOne({ id });
+  const isCustomerExist = await Customer.findOne({ id });
 
-  if (!isExist) {
+  if (!isCustomerExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found !');
   }
 
@@ -150,13 +146,25 @@ const deleteCustomer = async (id: string): Promise<ICustomer | null> => {
   try {
     session.startTransaction();
 
-    //delete customer first
+    // delete customer list first if it exists
+    await CustomerBookList.findOneAndDelete(
+      { customer: isCustomerExist._id },
+      { session },
+    );
+
+    // then delete customer wishlist if it exists
+    await CustomerBookWishlist.findOneAndDelete(
+      { customer: isCustomerExist._id },
+      { session },
+    );
+
+    // then delete customer itself
     const customer = await Customer.findOneAndDelete({ id }, { session });
     if (!customer) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete customer');
     }
 
-    //delete user
+    // and finally delete user
     await User.deleteOne({ id });
     await session.commitTransaction();
     await session.endSession();

@@ -19,8 +19,8 @@ router
   .route('/:id')
   .get(BookControllers.getBook)
   .patch(
-    validateRequest(BookValidations.updateBookZodSchema),
     auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
+    validateRequest(BookValidations.updateBookZodSchema),
     BookControllers.updateBook,
   )
   .delete(

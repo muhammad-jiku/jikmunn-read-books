@@ -14,8 +14,8 @@ router
     CustomerControllers.getCustomer,
   )
   .patch(
-    validateRequest(CustomerValidations.updateCustomerZodSchema),
     auth(USER_ROLES.ADMIN, USER_ROLES.CUSTOMER),
+    validateRequest(CustomerValidations.updateCustomerZodSchema),
     CustomerControllers.updateCustomer,
   )
   .delete(auth(USER_ROLES.ADMIN), CustomerControllers.deleteCustomer);

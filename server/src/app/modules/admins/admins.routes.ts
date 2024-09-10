@@ -11,8 +11,8 @@ router
   .route('/:id')
   .get(auth(USER_ROLES.ADMIN), AdminControllers.getAdmin)
   .patch(
-    validateRequest(AdminValidations.updateAdminZodSchema),
     auth(USER_ROLES.ADMIN),
+    validateRequest(AdminValidations.updateAdminZodSchema),
     AdminControllers.updateAdmin,
   )
   .delete(auth(USER_ROLES.ADMIN), AdminControllers.deleteAdmin);

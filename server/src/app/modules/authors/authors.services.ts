@@ -6,6 +6,8 @@ import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
 import { Book } from '../books/books.model';
+import { CustomerBookList } from '../customerBookLists/customerBookLists.model';
+import { CustomerBookWishlist } from '../customerBookWishlists/customerBookWishlists.model';
 import { ManageBook } from '../manageBooks/manageBooks.model';
 import { User } from '../users/users.model';
 import { authorSearchableFields } from './authors.constants';
@@ -150,11 +152,11 @@ const updateAuthor = async (
 };
 
 const deleteAuthor = async (id: string): Promise<IAuthor | null> => {
-  // check if the author is exist
-  const isExist = await Author.findOne({ id });
+  // Check if the author exists
+  const isAuthorExist = await Author.findOne({ id });
 
-  if (!isExist) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Author not found !');
+  if (!isAuthorExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Author not found!');
   }
 
   const session = await mongoose.startSession();
@@ -162,38 +164,95 @@ const deleteAuthor = async (id: string): Promise<IAuthor | null> => {
   try {
     session.startTransaction();
 
-    // delete author's book list first
-    const authorsBookList = await ManageBook.findOneAndDelete(
-      { author: isExist._id },
+    // Check if the book exists
+    const isBookExist = await Book.findOne({ author: isAuthorExist._id });
+
+    // check if author's book list exists
+    const authorsBookList = await ManageBook.findOne(
+      { author: isAuthorExist._id },
+      null,
       { session },
     );
-    if (!authorsBookList) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Failed to delete author's book list",
+
+    if (isBookExist) {
+      // Delete book from customer list if it exists
+      const manageBookLists = await CustomerBookList.findOne(
+        { 'books.book': isBookExist!._id },
+        null,
+        { session },
       );
+      if (manageBookLists) {
+        manageBookLists.books = manageBookLists.books.filter(
+          book => book.book.toString() !== isBookExist!._id.toString(),
+        );
+
+        await manageBookLists.save({ session });
+
+        if (manageBookLists.books.length === 0) {
+          await CustomerBookList.findByIdAndDelete(manageBookLists!._id, {
+            session,
+          });
+        }
+      }
+
+      // Delete book from customer wishlist if it exists
+      const manageBookWishlists = await CustomerBookWishlist.findOne(
+        { 'books.book': isBookExist!._id },
+        null,
+        { session },
+      );
+      if (manageBookWishlists) {
+        manageBookWishlists.books = manageBookWishlists.books.filter(
+          book => book.book.toString() !== isBookExist!._id.toString(),
+        );
+
+        await manageBookWishlists.save({ session });
+
+        if (manageBookWishlists.books.length === 0) {
+          await CustomerBookWishlist.findByIdAndDelete(
+            manageBookWishlists!._id,
+            {
+              session,
+            },
+          );
+        }
+      }
+
+      if (authorsBookList) {
+        // Delete author's manage book list
+        const deletedAuthorsBookList = await ManageBook.findByIdAndDelete(
+          authorsBookList._id,
+          { session },
+        );
+        if (!deletedAuthorsBookList) {
+          throw new ApiError(
+            httpStatus.NOT_FOUND,
+            "Failed to delete author's book list!",
+          );
+        }
+      }
+
+      // Delete the book itself
+      const deletedBook = await Book.findByIdAndDelete(isBookExist._id, {
+        session,
+      });
+      if (!deletedBook) {
+        throw new ApiError(
+          httpStatus.NOT_FOUND,
+          "Failed to delete author's book!",
+        );
+      }
     }
 
-    // delete book then
-    const book = await Book.findOneAndDelete(
-      { author: isExist._id },
-      { session },
-    );
-    if (!book) {
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Failed to delete author's book!",
-      );
-    }
-
-    // delete author then
+    // Delete author
     const author = await Author.findOneAndDelete({ id }, { session });
     if (!author) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Failed to delete author');
     }
 
-    //delete user
+    // Delete user
     await User.deleteOne({ id });
+
     await session.commitTransaction();
     await session.endSession();
 

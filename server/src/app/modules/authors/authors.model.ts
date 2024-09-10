@@ -29,9 +29,12 @@ const authorSchema = new Schema<IAuthor, IAuthorModel>(
     gender: {
       type: String,
       enum: gender,
+      required: true,
     },
     dateOfBirth: {
-      type: Date,
+      type: String,
+      // type: Date,
+      required: true,
     },
     email: {
       type: String,

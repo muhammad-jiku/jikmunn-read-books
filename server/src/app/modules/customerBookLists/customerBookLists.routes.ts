@@ -8,25 +8,29 @@ import { CustomerBookListValidations } from './customerBookLists.validations';
 const router = express.Router();
 
 router
-  .route('/update')
+  .route('/create')
   .post(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    validateRequest(CustomerBookListValidations.updateCustomerBookListSchema),
-    CustomerBookListControllers.updateCustomerBookListStatus,
+    auth(USER_ROLES.CUSTOMER),
+    validateRequest(CustomerBookListValidations.createCustomerBookListSchema),
+    CustomerBookListControllers.createCustomerBookListStatus,
   );
 
 router
   .route('/me')
   .get(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    CustomerBookListControllers.getAllCustomerBookListByStatus,
+    auth(USER_ROLES.CUSTOMER),
+    CustomerBookListControllers.getCustomerAllBookList,
+  )
+  .delete(
+    auth(USER_ROLES.CUSTOMER),
+    CustomerBookListControllers.removeCustomerBookFromList,
   );
 
 router
-  .route('/me/remove')
-  .post(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    CustomerBookListControllers.removeCustomerBookFromList,
+  .route('/:id')
+  .delete(
+    auth(USER_ROLES.ADMIN),
+    CustomerBookListControllers.deleteCustomerBookFromList,
   );
 
 router
@@ -34,10 +38,6 @@ router
   .get(
     auth(USER_ROLES.ADMIN),
     CustomerBookListControllers.getAllCustomerBookLists,
-  )
-  .delete(
-    auth(USER_ROLES.ADMIN),
-    CustomerBookListControllers.deleteCustomerBookFromList,
   );
 
 export const CustomerBookListRoutes = router;

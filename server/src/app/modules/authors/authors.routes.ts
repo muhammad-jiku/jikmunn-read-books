@@ -11,8 +11,8 @@ router
   .route('/:id')
   .get(auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR), AuthorControllers.getAuthor)
   .patch(
-    validateRequest(AuthorValidations.updateAuthorZodSchema),
     auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
+    validateRequest(AuthorValidations.updateAuthorZodSchema),
     AuthorControllers.updateAuthor,
   )
   .delete(auth(USER_ROLES.ADMIN), AuthorControllers.deleteAuthor);

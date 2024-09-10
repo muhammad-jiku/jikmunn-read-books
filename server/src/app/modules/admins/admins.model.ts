@@ -29,9 +29,12 @@ const adminSchema = new Schema<IAdmin, IAdminModel>(
     gender: {
       type: String,
       enum: gender,
+      required: true,
     },
     dateOfBirth: {
       type: String,
+      // type: Date
+      required: true,
     },
     email: {
       type: String,

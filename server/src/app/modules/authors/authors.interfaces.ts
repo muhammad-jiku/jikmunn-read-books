@@ -11,7 +11,7 @@ export interface IAuthor {
   id: string;
   name: UserName; //embedded object
   gender: 'male' | 'female';
-  dateOfBirth: Date;
+  dateOfBirth: string; // Date;
   email: string;
   contactNo: string;
   presentAddress: string;

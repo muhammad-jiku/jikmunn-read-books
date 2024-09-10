@@ -10,7 +10,7 @@ export interface IAdmin {
   id: string;
   name: UserName; //embedded object
   gender: 'male' | 'female';
-  dateOfBirth: string;
+  dateOfBirth: string; // Date
   email: string;
   contactNo: string;
   presentAddress: string;

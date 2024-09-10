@@ -20,6 +20,9 @@ const createCustomerZodSchema = z.object({
       dateOfBirth: z.string({
         required_error: 'Date of birth is required',
       }),
+      // dateOfBirth: z.date({
+      //   required_error: 'Date of birth is required',
+      // }),
       email: z
         .string({
           required_error: 'Email is required',
@@ -34,11 +37,6 @@ const createCustomerZodSchema = z.object({
       permanentAddress: z.string({
         required_error: 'Permanent address is required',
       }),
-      wishlist: z.string().optional(),
-      currentlyReading: z.string().optional(),
-      planToRead: z.string().optional(),
-      finishedReading: z.string().optional(),
-      profileImage: z.string().optional(),
     }),
   }),
 });
@@ -76,7 +74,6 @@ const createAuthorZodSchema = z.object({
       permanentAddress: z.string({
         required_error: 'Permanent address is required',
       }),
-      manageBook: z.string().optional(),
       profileImage: z.string().optional(),
     }),
   }),
@@ -108,9 +105,6 @@ const createAdminZodSchema = z.object({
         .email(),
       contactNo: z.string({
         required_error: 'Contact number is required',
-      }),
-      emergencyContactNo: z.string({
-        required_error: 'Emergency contact number is required',
       }),
       presentAddress: z.string({
         required_error: 'Present address is required',

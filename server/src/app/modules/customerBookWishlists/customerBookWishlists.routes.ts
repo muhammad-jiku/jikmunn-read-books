@@ -10,7 +10,7 @@ const router = express.Router();
 router
   .route('/create')
   .post(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
+    auth(USER_ROLES.CUSTOMER),
     validateRequest(
       CustomerBookWishlistValidations.createCustomerBookWishlistSchema,
     ),
@@ -20,15 +20,19 @@ router
 router
   .route('/me')
   .get(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    CustomerBookWishlistControllers.getAllCustomerBookWishlist,
+    auth(USER_ROLES.CUSTOMER),
+    CustomerBookWishlistControllers.getCustomerAllBookWishlist,
+  )
+  .delete(
+    auth(USER_ROLES.CUSTOMER),
+    CustomerBookWishlistControllers.removeBookFromCustomerBookWishlist,
   );
 
 router
-  .route('/me/remove')
-  .post(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
-    CustomerBookWishlistControllers.removeBookFromCustomerBookWishlist,
+  .route('/:id')
+  .delete(
+    auth(USER_ROLES.ADMIN),
+    CustomerBookWishlistControllers.deleteBookFromCustomeBookWishList,
   );
 
 router
@@ -36,10 +40,6 @@ router
   .get(
     auth(USER_ROLES.ADMIN),
     CustomerBookWishlistControllers.getAllCustomerBookWishlists,
-  )
-  .delete(
-    auth(USER_ROLES.ADMIN),
-    CustomerBookWishlistControllers.deleteBookFromCustomeBookWishList,
   );
 
 export const CustomerBookWishlistRoutes = router;

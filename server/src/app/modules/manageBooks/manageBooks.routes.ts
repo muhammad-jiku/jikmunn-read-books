@@ -8,13 +8,16 @@ const router = express.Router();
 router
   .route('/me')
   .get(
-    auth(USER_ROLES.ADMIN, USER_ROLES.AUTHOR),
+    auth(USER_ROLES.AUTHOR),
     ManageBookControllers.getAllManageBooksByAuthor,
   );
 
 router
-  .route('/')
-  .get(auth(USER_ROLES.ADMIN), ManageBookControllers.getAllManageBooks)
+  .route('/:id')
   .delete(auth(USER_ROLES.ADMIN), ManageBookControllers.deleteManageBook);
+
+router
+  .route('/')
+  .get(auth(USER_ROLES.ADMIN), ManageBookControllers.getAllManageBooks);
 
 export const ManageBookRoutes = router;

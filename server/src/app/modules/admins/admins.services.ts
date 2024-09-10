@@ -68,6 +68,9 @@ const getAllAdmins = async (
 
 const getAdmin = async (id: string): Promise<IAdmin | null> => {
   const result = await Admin.findOne({ id });
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Sorry, no admin found!');
+  }
 
   return result;
 };

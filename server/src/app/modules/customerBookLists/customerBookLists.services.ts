@@ -10,7 +10,7 @@ import { ICustomerBookList } from './customerBookLists.interfaces';
 import { CustomerBookList } from './customerBookLists.model';
 
 // Function to update the book status for a customer
-const updateCustomerBookListStatus = async (
+const createCustomerBookListStatus = async (
   user: JwtPayload | null,
   payload: ICustomerBookList,
 ): Promise<ICustomerBookList | null> => {
@@ -125,7 +125,7 @@ const getAllCustomerBookLists = async (): Promise<
   return result;
 };
 
-const getAllCustomerBookListByStatus = async (
+const getCustomerAllBookList = async (
   user: JwtPayload | null,
 ): Promise<ICustomerBookList[] | null> => {
   const isCustomerExist = await Customer.findOne({ id: user!.userId });
@@ -147,7 +147,7 @@ const getAllCustomerBookListByStatus = async (
 
 const removeCustomerBookFromList = async (
   user: JwtPayload | null,
-  id: string,
+  bookId: string,
 ): Promise<IBook | null> => {
   // Check if the author exists
   const isCustomerExist = await Customer.findOne({ id: user!.userId });
@@ -159,7 +159,7 @@ const removeCustomerBookFromList = async (
   }
 
   // check if the book exists
-  const isBookExist = await Book.findOne({ _id: id });
+  const isBookExist = await Book.findOne({ _id: bookId });
   if (!isBookExist) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Book not found !');
   }
@@ -169,7 +169,7 @@ const removeCustomerBookFromList = async (
   try {
     session.startTransaction();
 
-    // delete book from the list first
+    // find book from the list first
     const manageList = await CustomerBookList.findOne(
       { customer: isCustomerExist!._id },
       null, // No projection needed
@@ -187,6 +187,15 @@ const removeCustomerBookFromList = async (
 
     // Save the updated manageBooks document (pass session in options, not in the document)
     await manageList.save({ session });
+
+    // if books array length is zero then delete the book list
+    if (manageList.books.length === 0) {
+      await CustomerBookList.findOneAndDelete(
+        { customer: isCustomerExist!._id },
+        // null, // No projection needed
+        { session }, // Correctly passing session here
+      );
+    }
 
     await session.commitTransaction();
     await session.endSession();
@@ -207,9 +216,9 @@ const deleteCustomerBookFromList = async (
 };
 
 export const CustomerBookListServices = {
-  updateCustomerBookListStatus,
+  createCustomerBookListStatus,
   getAllCustomerBookLists,
-  getAllCustomerBookListByStatus,
+  getCustomerAllBookList,
   removeCustomerBookFromList,
   deleteCustomerBookFromList,
 };

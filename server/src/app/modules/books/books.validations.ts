@@ -46,7 +46,7 @@ const updateBookZodSchema = z.object({
       price: z.number().optional(),
       description: z.string().optional(),
       website: z.string().optional(),
-      reviews: z.array(z.string().optional()),
+      reviews: z.array(z.string().optional()).optional(),
       image: z.string().optional(),
     })
     .strict(),
