@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import mongoose, { SortOrder } from 'mongoose';
+import config from '../../../config';
 import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
@@ -19,9 +20,9 @@ const SSLCommerzPayment = require('sslcommerz-lts');
 const initSSLCommerzPayment = async (
   order: IOrder & { _id: mongoose.Types.ObjectId },
 ): Promise<{ paymentUrl: string; transactionId: string }> => {
-  const store_id = process.env.SSLCOMMERZ_STORE_ID;
-  const store_passwd = process.env.SSLCOMMERZ_STORE_PASSWORD;
-  const is_live = process.env.NODE_ENV === 'production';
+  const store_id = config.ssl.commerz_store_id;
+  const store_passwd = config.ssl.commerz_store_pass;
+  const is_live = config.env === 'production';
 
   if (!store_id || !store_passwd) {
     throw new ApiError(
@@ -36,10 +37,10 @@ const initSSLCommerzPayment = async (
     total_amount: order.payable,
     currency: 'BDT',
     tran_id: transactionId,
-    success_url: `${process.env.FRONTEND_URL}/payment/success?transactionId=${transactionId}`,
-    fail_url: `${process.env.FRONTEND_URL}/payment/fail?transactionId=${transactionId}`,
-    cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?transactionId=${transactionId}`,
-    ipn_url: `${process.env.BACKEND_URL}/api/v1/payments/ipn`,
+    success_url: `${config.frontend_url}/payment/success?transactionId=${transactionId}`,
+    fail_url: `${config.frontend_url}/payment/fail?transactionId=${transactionId}`,
+    cancel_url: `${config.frontend_url}/payment/cancel?transactionId=${transactionId}`,
+    ipn_url: `${config.backend_url}/api/v1/payments/ipn`,
     shipping_method: 'Courier',
     product_name: 'Books',
     product_category: 'Books',

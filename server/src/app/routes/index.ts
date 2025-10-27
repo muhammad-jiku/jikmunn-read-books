@@ -7,6 +7,7 @@ import { CustomerBookListRoutes } from '../modules/customerBookLists/customerBoo
 import { CustomerBookWishlistRoutes } from '../modules/customerBookWishlists/customerBookWishlists.routes';
 import { CustomerRoutes } from '../modules/customers/customers.routes';
 import { EBookAccessRoutes } from '../modules/ebookAccess/ebookAccess.routes';
+import { InventoryRoutes } from '../modules/inventory/inventory.routes';
 import { ManageBookRoutes } from '../modules/manageBooks/manageBooks.routes';
 import { OrderRoutes } from '../modules/orders/orders.routes';
 import { PaymentRoutes } from '../modules/payments/payments.routes';
@@ -67,6 +68,10 @@ const moduleRoutes = [
   {
     path: '/ebook-access',
     route: EBookAccessRoutes,
+  },
+  {
+    path: '/inventory',
+    route: InventoryRoutes,
   },
 ];
 

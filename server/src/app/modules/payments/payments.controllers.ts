@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
+import config from '../../../config';
 import { paginationFields } from '../../../constants/pagination';
 import ApiError from '../../../errors/ApiError';
 import { catchAsync } from '../../../shared/catchAsync';
@@ -45,12 +46,12 @@ const paymentSuccess = catchAsync(
 
       // Redirect to frontend success page
       res.redirect(
-        `${process.env.FRONTEND_URL}/payment/success?transactionId=${transactionId}`,
+        `${config.frontend_url}/payment/success?transactionId=${transactionId}`,
       );
     } catch (error) {
       errorlogger.error('Payment Success Error:', error);
       // Redirect to failure page even if there's an error
-      res.redirect(`${process.env.FRONTEND_URL}/payment/error`);
+      res.redirect(`${config.frontend_url}/payment/error`);
       return next(error);
     }
   },
@@ -67,11 +68,11 @@ const paymentFail = catchAsync(
       );
 
       res.redirect(
-        `${process.env.FRONTEND_URL}/payment/fail?transactionId=${transactionId}`,
+        `${config.frontend_url}/payment/fail?transactionId=${transactionId}`,
       );
     } catch (error) {
       errorlogger.error('Payment Fail Error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/payment/error`);
+      res.redirect(`${config.frontend_url}/payment/error`);
       return next(error);
     }
   },
@@ -88,11 +89,11 @@ const paymentCancel = catchAsync(
       );
 
       res.redirect(
-        `${process.env.FRONTEND_URL}/payment/cancel?transactionId=${transactionId}`,
+        `${config.frontend_url}/payment/cancel?transactionId=${transactionId}`,
       );
     } catch (error) {
       errorlogger.error('Payment Cancel Error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/payment/error`);
+      res.redirect(`${config.frontend_url}/payment/error`);
       return next(error);
     }
   },
