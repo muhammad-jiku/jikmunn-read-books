@@ -18,6 +18,7 @@ export type IShippingAddress = {
 };
 
 export type IOrder = {
+  _id?: Types.ObjectId;
   user: Types.ObjectId;
   items: IOrderItem[];
   totalAmount: number;

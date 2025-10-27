@@ -8,6 +8,7 @@ import { CustomerBookWishlistRoutes } from '../modules/customerBookWishlists/cus
 import { CustomerRoutes } from '../modules/customers/customers.routes';
 import { ManageBookRoutes } from '../modules/manageBooks/manageBooks.routes';
 import { OrderRoutes } from '../modules/orders/orders.routes';
+import { PaymentRoutes } from '../modules/payments/payments.routes';
 import { UserRoutes } from '../modules/users/users.routes';
 
 const routes = express.Router();
@@ -52,6 +53,10 @@ const moduleRoutes = [
   {
     path: '/orders',
     route: OrderRoutes,
+  },
+  {
+    path: '/payments',
+    route: PaymentRoutes,
   },
 ];
 
