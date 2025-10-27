@@ -7,6 +7,7 @@ import { CustomerBookListRoutes } from '../modules/customerBookLists/customerBoo
 import { CustomerBookWishlistRoutes } from '../modules/customerBookWishlists/customerBookWishlists.routes';
 import { CustomerRoutes } from '../modules/customers/customers.routes';
 import { ManageBookRoutes } from '../modules/manageBooks/manageBooks.routes';
+import { OrderRoutes } from '../modules/orders/orders.routes';
 import { UserRoutes } from '../modules/users/users.routes';
 
 const routes = express.Router();
@@ -47,6 +48,10 @@ const moduleRoutes = [
   {
     path: '/books',
     route: BookRoutes,
+  },
+  {
+    path: '/orders',
+    route: OrderRoutes,
   },
 ];
 
