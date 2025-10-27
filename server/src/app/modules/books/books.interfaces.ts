@@ -1,10 +1,9 @@
-import { Model, Schema } from 'mongoose';
-import { IAuthor } from '../authors/authors.interfaces';
+import { Model, Types } from 'mongoose';
 
-export interface IBook {
+export type IBook = {
   title: string;
   subtitle?: string;
-  author: Schema.Types.ObjectId | IAuthor;
+  author: Types.ObjectId;
   publicationDate: string;
   publisher: string;
   pages: number;
@@ -14,15 +13,39 @@ export interface IBook {
   website?: string;
   reviews: string[];
   image?: string;
-}
+  // New fields for e-commerce
+  isbn?: string;
+  stock: number;
+  isAvailable: boolean;
+  ebookUrl?: string;
+  categories: string[];
+  tags?: string[];
+  averageRating: number;
+  totalReviews: number;
+  discount?: number;
+  originalPrice?: number;
+  isFeatured: boolean;
+  language: string;
+  edition?: string;
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+};
 
 export type IBookModel = Model<IBook, Record<string, unknown>>;
 
-export interface IBookFilters {
+export type IBookFilters = {
   searchTerm?: string;
-  id?: string;
   title?: string;
   author?: string;
-  publisher?: string;
   genre?: string;
-}
+  minPrice?: number;
+  maxPrice?: number;
+  category?: string;
+  isAvailable?: boolean;
+  isFeatured?: boolean;
+  language?: string;
+};

@@ -69,14 +69,23 @@ const refreshTokenHandler = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not exist!');
   }
 
-  const newAccesToken = jwtHelpers.createToken(
+  // Generate new access token
+  const newAccessToken = jwtHelpers.createToken(
     { userId, role },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string,
   );
 
+  // Generate new refresh token
+  const newRefreshToken = jwtHelpers.createToken(
+    { userId, role },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string,
+  );
+
   return {
-    accessToken: newAccesToken,
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken, // Return new refresh token
   };
 };
 

@@ -11,6 +11,7 @@ export interface ILoginUserResponse {
 
 export interface IRefreshTokenResponse {
   accessToken: string;
+  refreshToken: string;
 }
 
 export interface IChangePassword {
