@@ -16,10 +16,12 @@ const notificationSchema = new Schema<INotification, INotificationModel>(
     title: {
       type: String,
       required: true,
+      trim: true,
     },
     message: {
       type: String,
       required: true,
+      trim: true,
     },
     data: {
       type: Schema.Types.Mixed,
@@ -55,8 +57,10 @@ const notificationSchema = new Schema<INotification, INotificationModel>(
   },
 );
 
-// Index for efficient querying
-notificationSchema.index({ user: 1, isRead: 1 });
+// Indexes for better query performance
+notificationSchema.index({ user: 1, createdAt: -1 });
+notificationSchema.index({ isRead: 1 });
+notificationSchema.index({ type: 1 });
 notificationSchema.index({ createdAt: -1 });
 
 export const Notification = model<INotification, INotificationModel>(
