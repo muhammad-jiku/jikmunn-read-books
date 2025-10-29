@@ -8,13 +8,12 @@ import { CouponValidations } from './coupons.validations';
 const router = express.Router();
 
 router
-  .route('/')
+  .route('/create')
   .post(
     auth(USER_ROLES.ADMIN),
     validateRequest(CouponValidations.createCouponZodSchema),
     CouponControllers.createCoupon,
-  )
-  .get(auth(USER_ROLES.ADMIN), CouponControllers.getAllCoupons);
+  );
 
 router
   .route('/validate')
@@ -25,6 +24,16 @@ router
   );
 
 router
+  .route('/apply')
+  .post(
+    auth(USER_ROLES.CUSTOMER),
+    validateRequest(CouponValidations.applyCouponZodSchema),
+    CouponControllers.applyCoupon,
+  );
+
+router.route('/active').get(CouponControllers.getActiveCoupons);
+
+router
   .route('/:id')
   .get(auth(USER_ROLES.ADMIN), CouponControllers.getCoupon)
   .patch(
@@ -33,5 +42,7 @@ router
     CouponControllers.updateCoupon,
   )
   .delete(auth(USER_ROLES.ADMIN), CouponControllers.deleteCoupon);
+
+router.route('/').get(auth(USER_ROLES.ADMIN), CouponControllers.getAllCoupons);
 
 export const CouponRoutes = router;

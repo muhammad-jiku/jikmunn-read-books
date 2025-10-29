@@ -8,17 +8,17 @@ export const createCouponZodSchema = z.object({
     discountValue: z.number().positive('Discount value must be positive'),
     minOrder: z.number().min(0, 'Minimum order must be non-negative'),
     maxDiscount: z.number().optional(),
-    startDate: z.string().datetime(), // or z.date()
+    startDate: z.string().datetime(),
     endDate: z.string().datetime(),
     usageLimit: z
       .number()
       .int()
       .positive('Usage limit must be a positive integer'),
-    isActive: z.boolean().optional(),
+    isActive: z.boolean().optional().default(true),
     applicableCategories: z.array(z.string()).optional(),
     excludedProducts: z.array(z.string()).optional(),
     userSpecific: z.array(z.string()).optional(),
-    oneTimeUse: z.boolean().optional(),
+    oneTimeUse: z.boolean().optional().default(false),
   }),
 });
 
@@ -54,11 +54,14 @@ export const updateCouponZodSchema = z.object({
 export const validateCouponZodSchema = z.object({
   body: z.object({
     code: z.string().min(1, 'Code is required'),
-    order: z.object({
-      totalAmount: z.number().min(0),
-      items: z.array(z.any()), // We can define a more specific order item schema if needed
-    }),
-    user: z.string(), // user id
+    orderAmount: z.number().min(0, 'Order amount must be non-negative'),
+  }),
+});
+
+export const applyCouponZodSchema = z.object({
+  body: z.object({
+    code: z.string().min(1, 'Code is required'),
+    orderAmount: z.number().min(0, 'Order amount must be non-negative'),
   }),
 });
 
@@ -66,4 +69,5 @@ export const CouponValidations = {
   createCouponZodSchema,
   updateCouponZodSchema,
   validateCouponZodSchema,
+  applyCouponZodSchema,
 };

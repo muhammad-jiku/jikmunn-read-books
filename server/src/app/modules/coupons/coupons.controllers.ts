@@ -93,6 +93,7 @@ const deleteCoupon = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
+
       const result = await CouponServices.deleteCoupon(id);
 
       sendResponse<ICoupon>(res, {
@@ -110,16 +111,60 @@ const deleteCoupon = catchAsync(
 const validateCoupon = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { code } = req.body;
-      const { order, user } = req.body; // We'll need to adjust this to get the current user and order
+      const { code, orderAmount } = req.body;
+      const user = req.user;
 
-      // In a real scenario, we would get the order from the request body or based on the user's cart
-      const result = await CouponServices.validateCoupon(code, order, user);
+      const result = await CouponServices.validateCoupon(
+        code,
+        user!.userId,
+        orderAmount,
+      );
 
       sendResponse<any>(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'Coupon validated successfully!',
+        message: result.isValid ? 'Coupon is valid' : 'Coupon is invalid',
+        data: result,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+const applyCoupon = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { code, orderAmount } = req.body;
+      const user = req.user;
+
+      const result = await CouponServices.applyCoupon(
+        code,
+        user!.userId,
+        orderAmount,
+      );
+
+      sendResponse<any>(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Coupon applied successfully!',
+        data: result,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+const getActiveCoupons = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await CouponServices.getActiveCoupons();
+
+      sendResponse<ICoupon[]>(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Active coupons retrieved successfully!',
         data: result,
       });
     } catch (error) {
@@ -135,4 +180,6 @@ export const CouponControllers = {
   updateCoupon,
   deleteCoupon,
   validateCoupon,
+  applyCoupon,
+  getActiveCoupons,
 };

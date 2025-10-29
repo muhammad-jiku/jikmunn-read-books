@@ -5,12 +5,17 @@ import ApiError from '../../../errors/ApiError';
 import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
-import { IOrder } from '../orders/orders.interfaces';
 import { couponSearchableFields } from './coupons.constants';
 import { ICoupon, ICouponFilters } from './coupons.interfaces';
 import { Coupon } from './coupons.model';
 
-const createCoupon = async (couponData: ICoupon): Promise<ICoupon> => {
+const createCoupon = async (couponData: ICoupon): Promise<ICoupon | null> => {
+  // Check if coupon code already exists
+  const existingCoupon = await Coupon.findOne({ code: couponData.code });
+  if (existingCoupon) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Coupon code already exists');
+  }
+
   const coupon = await Coupon.create(couponData);
   return coupon;
 };
@@ -70,36 +75,36 @@ const getAllCoupons = async (
 };
 
 const getCoupon = async (id: string): Promise<ICoupon | null> => {
-  const coupon = await Coupon.findById(id);
-  if (!coupon) {
+  const result = await Coupon.findById(id);
+  if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Coupon not found');
   }
-  return coupon;
+  return result;
 };
 
 const updateCoupon = async (
   id: string,
   payload: Partial<ICoupon>,
 ): Promise<ICoupon | null> => {
-  const coupon = await Coupon.findByIdAndUpdate(id, payload, { new: true });
-  if (!coupon) {
+  const result = await Coupon.findByIdAndUpdate(id, payload, { new: true });
+  if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Coupon not found');
   }
-  return coupon;
+  return result;
 };
 
 const deleteCoupon = async (id: string): Promise<ICoupon | null> => {
-  const coupon = await Coupon.findByIdAndDelete(id);
-  if (!coupon) {
+  const result = await Coupon.findByIdAndDelete(id);
+  if (!result) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Coupon not found');
   }
-  return coupon;
+  return result;
 };
 
 const validateCoupon = async (
   code: string,
-  order: IOrder,
   userId: string,
+  orderAmount: number,
 ): Promise<{ isValid: boolean; discount: number; message?: string }> => {
   const coupon = await Coupon.findOne({ code, isActive: true });
 
@@ -108,12 +113,12 @@ const validateCoupon = async (
   }
 
   const now = new Date();
-  if (now < coupon.startDate || now > coupon.endDate) {
-    return {
-      isValid: false,
-      discount: 0,
-      message: 'Coupon is expired or not yet active',
-    };
+  if (now < coupon.startDate) {
+    return { isValid: false, discount: 0, message: 'Coupon is not yet active' };
+  }
+
+  if (now > coupon.endDate) {
+    return { isValid: false, discount: 0, message: 'Coupon has expired' };
   }
 
   if (coupon.usedCount >= coupon.usageLimit) {
@@ -124,7 +129,7 @@ const validateCoupon = async (
     };
   }
 
-  if (order.totalAmount < coupon.minOrder) {
+  if (orderAmount < coupon.minOrder) {
     return {
       isValid: false,
       discount: 0,
@@ -137,8 +142,9 @@ const validateCoupon = async (
   }
 
   if (
-    coupon.userSpecific!.length > 0 &&
-    !coupon.userSpecific!.includes(userId as any)
+    coupon.userSpecific &&
+    coupon.userSpecific.length > 0 &&
+    !coupon.userSpecific.includes(userId as any)
   ) {
     return {
       isValid: false,
@@ -150,7 +156,7 @@ const validateCoupon = async (
   // Calculate discount
   let discount = 0;
   if (coupon.discountType === 'percentage') {
-    discount = (order.totalAmount * coupon.discountValue) / 100;
+    discount = (orderAmount * coupon.discountValue) / 100;
     if (coupon.maxDiscount && discount > coupon.maxDiscount) {
       discount = coupon.maxDiscount;
     }
@@ -158,15 +164,19 @@ const validateCoupon = async (
     discount = coupon.discountValue;
   }
 
-  return { isValid: true, discount, message: 'Coupon applied successfully' };
+  return {
+    isValid: true,
+    discount,
+    message: 'Coupon applied successfully',
+  };
 };
 
 const applyCoupon = async (
   code: string,
-  order: IOrder,
   userId: string,
-): Promise<{ discount: number; finalAmount: number }> => {
-  const validation = await validateCoupon(code, order, userId);
+  orderAmount: number,
+): Promise<{ discount: number; finalAmount: number; coupon: ICoupon }> => {
+  const validation = await validateCoupon(code, userId, orderAmount);
 
   if (!validation.isValid) {
     throw new ApiError(
@@ -175,21 +185,37 @@ const applyCoupon = async (
     );
   }
 
-  // Update coupon usage
-  await Coupon.findOneAndUpdate(
-    { code },
-    {
-      $inc: { usedCount: 1 },
-      $addToSet: { usedBy: userId },
-    },
-  );
+  const coupon = await Coupon.findOne({ code });
+  if (!coupon) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Coupon not found');
+  }
 
-  const finalAmount = order.totalAmount - validation.discount;
+  // Update coupon usage
+  coupon.usedCount += 1;
+  if (coupon.oneTimeUse) {
+    coupon.usedBy.push(userId as any);
+  }
+  await coupon.save();
+
+  const finalAmount = orderAmount - validation.discount;
 
   return {
     discount: validation.discount,
     finalAmount: finalAmount > 0 ? finalAmount : 0,
+    coupon,
   };
+};
+
+const getActiveCoupons = async (): Promise<ICoupon[]> => {
+  const now = new Date();
+  const coupons = await Coupon.find({
+    isActive: true,
+    startDate: { $lte: now },
+    endDate: { $gte: now },
+    $expr: { $lt: ['$usedCount', '$usageLimit'] },
+  } as any);
+
+  return coupons;
 };
 
 export const CouponServices = {
@@ -200,4 +226,5 @@ export const CouponServices = {
   deleteCoupon,
   validateCoupon,
   applyCoupon,
+  getActiveCoupons,
 };
