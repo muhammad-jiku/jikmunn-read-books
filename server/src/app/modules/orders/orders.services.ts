@@ -6,6 +6,7 @@ import { paginationHelpers } from '../../../helpers/paginationHelpers';
 import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
 import { Book } from '../books/books.model';
+import { InvoiceServices } from '../invoices/invoices.services';
 import { User } from '../users/users.model';
 import { orderSearchableFields } from './orders.constants';
 import { IOrder, IOrderFilters } from './orders.interfaces';
@@ -59,6 +60,11 @@ const createOrder = async (orderData: IOrder): Promise<IOrder | null> => {
     }
 
     newOrder = order[0];
+
+    // Create invoice for the order
+    if (newOrder) {
+      await InvoiceServices.createInvoiceFromOrder(newOrder._id.toString());
+    }
 
     await session.commitTransaction();
     await session.endSession();

@@ -1,0 +1,457 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import httpStatus from 'http-status';
+import mongoose, { SortOrder } from 'mongoose';
+import PDFDocument from 'pdfkit';
+import ApiError from '../../../errors/ApiError';
+import { paginationHelpers } from '../../../helpers/paginationHelpers';
+import { IGenericResponse } from '../../../interfaces/common';
+import { IPaginationOptions } from '../../../interfaces/pagination';
+import { Order } from '../orders/orders.model';
+import { User } from '../users/users.model';
+import { invoiceSearchableFields } from './invoices.constants';
+import { IInvoice, IInvoiceFilters } from './invoices.interfaces';
+import { Invoice } from './invoices.model';
+
+const generateInvoiceNumber = (): string => {
+  const timestamp = Date.now().toString();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `INV-${timestamp}-${random}`;
+};
+
+const createInvoiceFromOrder = async (
+  orderId: string,
+): Promise<IInvoice | null> => {
+  const session = await mongoose.startSession();
+  let newInvoice = null;
+
+  try {
+    session.startTransaction();
+
+    const order = await Order.findById(orderId)
+      .populate('user')
+      .populate('items.book')
+      .session(session);
+
+    if (!order) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    // Check if invoice already exists for this order
+    const existingInvoice = await Invoice.findOne({ order: orderId }).session(
+      session,
+    );
+    if (existingInvoice) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'Invoice already exists for this order',
+      );
+    }
+
+    const user = await User.findById(order.user).session(session);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    }
+
+    // Calculate due date (15 days from invoice date)
+    const invoiceDate = new Date();
+    const dueDate = new Date(invoiceDate);
+    dueDate.setDate(dueDate.getDate() + 15);
+
+    // Prepare invoice items
+    const invoiceItems = order.items.map(item => ({
+      book: (item.book as any)._id,
+      title: (item.book as any).title,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      totalPrice: item.quantity * item.price,
+      ebookAccess: item.ebookAccess,
+    }));
+
+    // Calculate totals
+    const subtotal = order.totalAmount;
+    const vat = order.vat || 0;
+    const surcharge = order.surcharge || 0;
+    const discount = 0; // Could be calculated from coupons
+    const totalAmount = order.payable;
+
+    // Get user email for billing address
+    let userEmail = 'customer@example.com';
+    if (user) {
+      const customer = await mongoose
+        .model('Customer')
+        .findOne({ _id: user.customer })
+        .session(session);
+      if (customer) {
+        userEmail = customer.email;
+      }
+    }
+
+    const invoiceData: IInvoice = {
+      invoiceNumber: generateInvoiceNumber(),
+      order: order._id,
+      user: order.user,
+      invoiceDate,
+      dueDate,
+      items: invoiceItems,
+      subtotal,
+      vat,
+      surcharge,
+      discount,
+      totalAmount,
+      paymentStatus: order.paymentStatus === 'completed' ? 'paid' : 'pending',
+      billingAddress: {
+        name: order.shippingAddress.name,
+        address: order.shippingAddress.address,
+        city: order.shippingAddress.city,
+        state: order.shippingAddress.state,
+        postcode: order.shippingAddress.postcode,
+        country: order.shippingAddress.country,
+        phone: order.shippingAddress.phone,
+        email: userEmail,
+      },
+      shippingAddress: order.shippingAddress,
+      paymentMethod: order.paymentMethod,
+      transactionId: order.tran_id,
+      notes: 'Thank you for your purchase!',
+      terms: 'Payment due within 15 days',
+      isGenerated: false,
+    };
+
+    const invoice = await Invoice.create([invoiceData], { session });
+    if (!invoice.length) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create invoice');
+    }
+
+    newInvoice = invoice[0];
+
+    await session.commitTransaction();
+    await session.endSession();
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
+  }
+
+  // Populate invoice data
+  if (newInvoice) {
+    newInvoice = await Invoice.findById(newInvoice._id)
+      .populate('order')
+      .populate('user')
+      .populate('items.book');
+  }
+
+  return newInvoice;
+};
+
+const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
+  const invoice = await Invoice.findById(invoiceId)
+    .populate('user')
+    .populate('items.book')
+    .populate('order');
+
+  if (!invoice) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Invoice not found');
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 50 });
+      const buffers: Buffer[] = [];
+
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
+
+      // Header
+      doc.fontSize(20).font('Helvetica-Bold').text('BOOKSTORE INVOICE', 50, 50);
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(`Invoice #: ${invoice.invoiceNumber}`, 50, 80);
+      doc.text(`Date: ${invoice.invoiceDate.toLocaleDateString()}`, 50, 95);
+      doc.text(`Due Date: ${invoice.dueDate.toLocaleDateString()}`, 50, 110);
+
+      // Company Info
+      doc
+        .text('BookStore Ltd.', 400, 80)
+        .text('123 Book Street', 400, 95)
+        .text('Dhaka 1212, Bangladesh', 400, 110)
+        .text('Phone: +880 1234-567890', 400, 125)
+        .text('Email: info@bookstore.com', 400, 140);
+
+      // Billing Address
+      doc
+        .text('Bill To:', 50, 150)
+        .font('Helvetica-Bold')
+        .text(invoice.billingAddress.name, 50, 165)
+        .font('Helvetica')
+        .text(invoice.billingAddress.address, 50, 180)
+        .text(
+          `${invoice.billingAddress.city}, ${invoice.billingAddress.state} ${invoice.billingAddress.postcode}`,
+          50,
+          195,
+        )
+        .text(invoice.billingAddress.country, 50, 210)
+        .text(`Phone: ${invoice.billingAddress.phone}`, 50, 225)
+        .text(`Email: ${invoice.billingAddress.email}`, 50, 240);
+
+      // Line
+      doc.moveTo(50, 270).lineTo(550, 270).stroke();
+
+      // Table Header
+      let yPosition = 290;
+      doc
+        .font('Helvetica-Bold')
+        .text('Description', 50, yPosition)
+        .text('Qty', 300, yPosition)
+        .text('Unit Price', 350, yPosition)
+        .text('Total', 450, yPosition);
+
+      yPosition += 20;
+      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+
+      // Table Rows
+      doc.font('Helvetica');
+      invoice.items.forEach((item: any) => {
+        yPosition += 20;
+        doc
+          .text(item.title, 50, yPosition, { width: 240 })
+          .text(item.quantity.toString(), 300, yPosition)
+          .text(`$${item.unitPrice.toFixed(2)}`, 350, yPosition)
+          .text(`$${item.totalPrice.toFixed(2)}`, 450, yPosition);
+      });
+
+      yPosition += 30;
+      doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
+
+      // Totals
+      yPosition += 20;
+      doc
+        .text('Subtotal:', 400, yPosition)
+        .text(`$${invoice.subtotal.toFixed(2)}`, 450, yPosition);
+
+      yPosition += 20;
+      doc
+        .text('VAT:', 400, yPosition)
+        .text(`$${invoice.vat.toFixed(2)}`, 450, yPosition);
+
+      if (invoice.surcharge > 0) {
+        yPosition += 20;
+        doc
+          .text('Surcharge:', 400, yPosition)
+          .text(`$${invoice.surcharge.toFixed(2)}`, 450, yPosition);
+      }
+
+      if (invoice.discount > 0) {
+        yPosition += 20;
+        doc
+          .text('Discount:', 400, yPosition)
+          .text(`-$${invoice.discount.toFixed(2)}`, 450, yPosition);
+      }
+
+      yPosition += 25;
+      doc
+        .font('Helvetica-Bold')
+        .text('Total:', 400, yPosition)
+        .text(`$${invoice.totalAmount.toFixed(2)}`, 450, yPosition);
+
+      // Payment Status
+      yPosition += 40;
+      doc
+        .font('Helvetica-Bold')
+        .text(
+          `Payment Status: ${invoice.paymentStatus.toUpperCase()}`,
+          50,
+          yPosition,
+        );
+
+      // Notes
+      if (invoice.notes) {
+        yPosition += 40;
+        doc.font('Helvetica-Bold').text('Notes:', 50, yPosition);
+        doc
+          .font('Helvetica')
+          .text(invoice.notes, 50, yPosition + 15, { width: 500 });
+      }
+
+      // Terms
+      if (invoice.terms) {
+        yPosition += 60;
+        doc.font('Helvetica-Bold').text('Terms & Conditions:', 50, yPosition);
+        doc
+          .font('Helvetica')
+          .text(invoice.terms, 50, yPosition + 15, { width: 500 });
+      }
+
+      // Footer
+      doc
+        .fontSize(8)
+        .text('Thank you for your business!', 50, 700)
+        .text('BookStore Ltd. - Your trusted book partner', 50, 715);
+
+      doc.end();
+
+      // Mark invoice as generated
+      invoice.isGenerated = true;
+      invoice.generatedAt = new Date();
+      await invoice.save();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const getAllInvoices = async (
+  filters: IInvoiceFilters,
+  paginationOptions: IPaginationOptions,
+): Promise<IGenericResponse<IInvoice[]>> => {
+  const { searchTerm, ...filtersData } = filters;
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
+
+  const andConditions = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      $or: invoiceSearchableFields.map(field => ({
+        [field]: {
+          $regex: searchTerm,
+          $options: 'i',
+        },
+      })),
+    });
+  }
+
+  if (Object.keys(filtersData).length) {
+    andConditions.push({
+      $and: Object.entries(filtersData).map(([field, value]) => {
+        if (field === 'startDate' || field === 'endDate') {
+          return {};
+        }
+        return { [field]: value };
+      }),
+    });
+  }
+
+  // Date range filter
+  if (filtersData.startDate || filtersData.endDate) {
+    const dateFilter: any = {};
+    if (filtersData.startDate) {
+      dateFilter.$gte = new Date(filtersData.startDate);
+    }
+    if (filtersData.endDate) {
+      dateFilter.$lte = new Date(filtersData.endDate);
+    }
+    andConditions.push({
+      invoiceDate: dateFilter,
+    });
+  }
+
+  // Amount range filter
+  if (filtersData.minAmount || filtersData.maxAmount) {
+    const amountFilter: any = {};
+    if (filtersData.minAmount) {
+      amountFilter.$gte = Number(filtersData.minAmount);
+    }
+    if (filtersData.maxAmount) {
+      amountFilter.$lte = Number(filtersData.maxAmount);
+    }
+    andConditions.push({
+      totalAmount: amountFilter,
+    });
+  }
+
+  const sortConditions: { [key: string]: SortOrder } = {};
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder;
+  }
+
+  const whereConditions =
+    andConditions.length > 0 ? { $and: andConditions } : {};
+
+  const result = await Invoice.find(whereConditions)
+    .populate('order')
+    .populate('user')
+    .populate('items.book')
+    .sort(sortConditions)
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Invoice.countDocuments(whereConditions);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
+const getInvoice = async (id: string): Promise<IInvoice | null> => {
+  const result = await Invoice.findById(id)
+    .populate('order')
+    .populate('user')
+    .populate('items.book');
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Invoice not found');
+  }
+
+  return result;
+};
+
+const getUserInvoices = async (userId: string): Promise<IInvoice[]> => {
+  const user = await User.findOne({ id: userId });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  const result = await Invoice.find({ user: user._id })
+    .populate('order')
+    .populate('items.book')
+    .sort({ invoiceDate: -1 });
+
+  return result;
+};
+
+const updateInvoicePaymentStatus = async (
+  invoiceId: string,
+  paymentStatus: 'pending' | 'paid' | 'overdue' | 'cancelled',
+): Promise<IInvoice | null> => {
+  const result = await Invoice.findByIdAndUpdate(
+    invoiceId,
+    { paymentStatus },
+    { new: true },
+  )
+    .populate('order')
+    .populate('user')
+    .populate('items.book');
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Invoice not found');
+  }
+
+  return result;
+};
+
+const deleteInvoice = async (id: string): Promise<IInvoice | null> => {
+  const result = await Invoice.findByIdAndDelete(id);
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Invoice not found');
+  }
+  return result;
+};
+
+export const InvoiceServices = {
+  createInvoiceFromOrder,
+  generateInvoicePDF,
+  getAllInvoices,
+  getInvoice,
+  getUserInvoices,
+  updateInvoicePaymentStatus,
+  deleteInvoice,
+};
