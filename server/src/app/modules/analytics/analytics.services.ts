@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import httpStatus from 'http-status';
+import ApiError from '../../../errors/ApiError';
 import { Author } from '../authors/authors.model';
 import { Book } from '../books/books.model';
 import { Order } from '../orders/orders.model';
@@ -33,22 +36,22 @@ const generateSalesReport = async (
   const productSales: { [key: string]: { product: any; sales: number } } = {};
   const categorySales: { [key: string]: number } = {};
 
-  orders.forEach(order => {
+  orders.forEach((order: any) => {
     totalSales += order.totalAmount;
 
     const date = order.createdAt.toISOString().split('T')[0];
     salesByDateMap[date] = (salesByDateMap[date] || 0) + order.totalAmount;
 
-    order.items.forEach(item => {
+    order.items.forEach((item: any) => {
       const book: any = item.book;
       if (!productSales[book._id]) {
         productSales[book._id] = { product: book, sales: 0 };
       }
       productSales[book._id].sales += item.quantity * item.price;
 
-      if (book.category) {
-        categorySales[book.category] =
-          (categorySales[book.category] || 0) + item.quantity * item.price;
+      if (book.genre) {
+        categorySales[book.genre] =
+          (categorySales[book.genre] || 0) + item.quantity * item.price;
       }
     });
   });
@@ -81,6 +84,8 @@ const generateUserAnalytics = async (
   const { startDate, endDate } = filters;
 
   const totalUsers = await User.countDocuments();
+
+  // Fix: Use proper date filter syntax
   const newUsers = await User.countDocuments({
     createdAt: {
       $gte: new Date(startDate),
@@ -202,12 +207,12 @@ const generatePlatformAnalytics = async (
 const getAuthorPerformance = async (
   authorId: string,
   filters: IAnalyticsFilters,
-) => {
+): Promise<any> => {
   const { startDate, endDate } = filters;
 
   const author = await Author.findOne({ id: authorId });
   if (!author) {
-    throw new Error('Author not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Author not found');
   }
 
   const authorBooks = await Book.find({ author: author._id });

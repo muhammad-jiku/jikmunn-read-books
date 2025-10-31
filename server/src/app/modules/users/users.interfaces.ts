@@ -13,6 +13,8 @@ export interface IUser {
   customer?: Types.ObjectId | ICustomer;
   author?: Types.ObjectId | IAuthor;
   admin?: Types.ObjectId | IAdmin;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // types of user model for statics methods

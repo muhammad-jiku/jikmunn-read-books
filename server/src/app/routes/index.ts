@@ -1,14 +1,18 @@
 import express from 'express';
 import { AdminRoutes } from '../modules/admins/admins.routes';
+import { AnalyticsRoutes } from '../modules/analytics/analytics.routes';
 import { AuthRoutes } from '../modules/auth/auth.routes';
 import { AuthorRoutes } from '../modules/authors/authors.routes';
 import { BookRoutes } from '../modules/books/books.routes';
+import { CouponRoutes } from '../modules/coupons/coupons.routes';
 import { CustomerBookListRoutes } from '../modules/customerBookLists/customerBookLists.routes';
 import { CustomerBookWishlistRoutes } from '../modules/customerBookWishlists/customerBookWishlists.routes';
 import { CustomerRoutes } from '../modules/customers/customers.routes';
 import { EBookAccessRoutes } from '../modules/ebookAccess/ebookAccess.routes';
 import { InventoryRoutes } from '../modules/inventory/inventory.routes';
+import { InvoiceRoutes } from '../modules/invoices/invoices.routes';
 import { ManageBookRoutes } from '../modules/manageBooks/manageBooks.routes';
+import { NotificationRoutes } from '../modules/notifications/notifications.routes';
 import { OrderRoutes } from '../modules/orders/orders.routes';
 import { PaymentRoutes } from '../modules/payments/payments.routes';
 import { ReviewRoutes } from '../modules/reviews/reviews.routes';
@@ -72,6 +76,22 @@ const moduleRoutes = [
   {
     path: '/inventory',
     route: InventoryRoutes,
+  },
+  {
+    path: '/coupons',
+    route: CouponRoutes,
+  },
+  {
+    path: '/notifications',
+    route: NotificationRoutes,
+  },
+  {
+    path: '/analytics',
+    route: AnalyticsRoutes,
+  },
+  {
+    path: '/invoices',
+    route: InvoiceRoutes,
   },
 ];
 

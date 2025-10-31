@@ -18,6 +18,7 @@ export type IShippingAddress = {
 };
 
 export type IOrder = {
+  id: string;
   _id?: Types.ObjectId;
   user: Types.ObjectId;
   items: IOrderItem[];
@@ -48,6 +49,8 @@ export type IOrder = {
   deliveredAt?: Date;
   cancelledAt?: Date;
   cancellationReason?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type IOrderModel = Model<IOrder, Record<string, unknown>>;

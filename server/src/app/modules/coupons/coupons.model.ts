@@ -3,6 +3,11 @@ import { ICoupon, ICouponModel } from './coupons.interfaces';
 
 const couponSchema = new Schema<ICoupon, ICouponModel>(
   {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     code: {
       type: String,
       required: true,

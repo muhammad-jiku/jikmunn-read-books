@@ -1,6 +1,7 @@
 import { Model, Types } from 'mongoose';
 
 export type ICoupon = {
+  id: string;
   code: string;
   description: string;
   discountType: 'percentage' | 'fixed';

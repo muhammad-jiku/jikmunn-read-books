@@ -3,6 +3,11 @@ import { IPayment, IPaymentModel } from './payments.interfaces';
 
 const paymentSchema = new Schema<IPayment, IPaymentModel>(
   {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     order: {
       type: Schema.Types.ObjectId,
       ref: 'Order',

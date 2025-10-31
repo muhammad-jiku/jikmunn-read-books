@@ -2,6 +2,7 @@
 import { Model, Types } from 'mongoose';
 
 export type IPayment = {
+  id: string;
   order: Types.ObjectId;
   user: Types.ObjectId;
   paymentGateway: string;

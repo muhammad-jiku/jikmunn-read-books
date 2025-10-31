@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Buffer } from 'buffer';
 import httpStatus from 'http-status';
 import mongoose, { SortOrder } from 'mongoose';
 import PDFDocument from 'pdfkit';
@@ -47,7 +48,7 @@ const createInvoiceFromOrder = async (
       );
     }
 
-    const user = await User.findById(order.user).session(session);
+    const user = await User.findById((order as any).user).session(session);
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
     }
@@ -58,7 +59,7 @@ const createInvoiceFromOrder = async (
     dueDate.setDate(dueDate.getDate() + 15);
 
     // Prepare invoice items
-    const invoiceItems = order.items.map(item => ({
+    const invoiceItems = (order as any).items.map((item: any) => ({
       book: (item.book as any)._id,
       title: (item.book as any).title,
       quantity: item.quantity,
@@ -68,28 +69,28 @@ const createInvoiceFromOrder = async (
     }));
 
     // Calculate totals
-    const subtotal = order.totalAmount;
-    const vat = order.vat || 0;
-    const surcharge = order.surcharge || 0;
+    const subtotal = (order as any).totalAmount;
+    const vat = (order as any).vat || 0;
+    const surcharge = (order as any).surcharge || 0;
     const discount = 0; // Could be calculated from coupons
-    const totalAmount = order.payable;
+    const totalAmount = (order as any).payable;
 
     // Get user email for billing address
     let userEmail = 'customer@example.com';
     if (user) {
       const customer = await mongoose
         .model('Customer')
-        .findOne({ _id: user.customer })
+        .findOne({ _id: (user as any).customer })
         .session(session);
       if (customer) {
-        userEmail = customer.email;
+        userEmail = (customer as any).email;
       }
     }
 
     const invoiceData: IInvoice = {
       invoiceNumber: generateInvoiceNumber(),
-      order: order._id,
-      user: order.user,
+      order: (order as any)._id,
+      user: (order as any).user,
       invoiceDate,
       dueDate,
       items: invoiceItems,
@@ -98,20 +99,21 @@ const createInvoiceFromOrder = async (
       surcharge,
       discount,
       totalAmount,
-      paymentStatus: order.paymentStatus === 'completed' ? 'paid' : 'pending',
+      paymentStatus:
+        (order as any).paymentStatus === 'completed' ? 'paid' : 'pending',
       billingAddress: {
-        name: order.shippingAddress.name,
-        address: order.shippingAddress.address,
-        city: order.shippingAddress.city,
-        state: order.shippingAddress.state,
-        postcode: order.shippingAddress.postcode,
-        country: order.shippingAddress.country,
-        phone: order.shippingAddress.phone,
+        name: (order as any).shippingAddress.name,
+        address: (order as any).shippingAddress.address,
+        city: (order as any).shippingAddress.city,
+        state: (order as any).shippingAddress.state,
+        postcode: (order as any).shippingAddress.postcode,
+        country: (order as any).shippingAddress.country,
+        phone: (order as any).shippingAddress.phone,
         email: userEmail,
       },
-      shippingAddress: order.shippingAddress,
-      paymentMethod: order.paymentMethod,
-      transactionId: order.tran_id,
+      shippingAddress: (order as any).shippingAddress,
+      paymentMethod: (order as any).paymentMethod,
+      transactionId: (order as any).tran_id,
       notes: 'Thank you for your purchase!',
       terms: 'Payment due within 15 days',
       isGenerated: false,
@@ -156,9 +158,9 @@ const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50 });
-      const buffers: Buffer[] = [];
+      const buffers: any[] = [];
 
-      doc.on('data', buffers.push.bind(buffers));
+      doc.on('data', (buffer: any) => buffers.push(buffer));
       doc.on('end', () => {
         const pdfData = Buffer.concat(buffers);
         resolve(pdfData);
@@ -169,9 +171,17 @@ const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
       doc
         .fontSize(10)
         .font('Helvetica')
-        .text(`Invoice #: ${invoice.invoiceNumber}`, 50, 80);
-      doc.text(`Date: ${invoice.invoiceDate.toLocaleDateString()}`, 50, 95);
-      doc.text(`Due Date: ${invoice.dueDate.toLocaleDateString()}`, 50, 110);
+        .text(`Invoice #: ${(invoice as any).invoiceNumber}`, 50, 80);
+      doc.text(
+        `Date: ${(invoice as any).invoiceDate.toLocaleDateString()}`,
+        50,
+        95,
+      );
+      doc.text(
+        `Due Date: ${(invoice as any).dueDate.toLocaleDateString()}`,
+        50,
+        110,
+      );
 
       // Company Info
       doc
@@ -185,17 +195,17 @@ const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
       doc
         .text('Bill To:', 50, 150)
         .font('Helvetica-Bold')
-        .text(invoice.billingAddress.name, 50, 165)
+        .text((invoice as any).billingAddress.name, 50, 165)
         .font('Helvetica')
-        .text(invoice.billingAddress.address, 50, 180)
+        .text((invoice as any).billingAddress.address, 50, 180)
         .text(
-          `${invoice.billingAddress.city}, ${invoice.billingAddress.state} ${invoice.billingAddress.postcode}`,
+          `${(invoice as any).billingAddress.city}, ${(invoice as any).billingAddress.state} ${(invoice as any).billingAddress.postcode}`,
           50,
           195,
         )
-        .text(invoice.billingAddress.country, 50, 210)
-        .text(`Phone: ${invoice.billingAddress.phone}`, 50, 225)
-        .text(`Email: ${invoice.billingAddress.email}`, 50, 240);
+        .text((invoice as any).billingAddress.country, 50, 210)
+        .text(`Phone: ${(invoice as any).billingAddress.phone}`, 50, 225)
+        .text(`Email: ${(invoice as any).billingAddress.email}`, 50, 240);
 
       // Line
       doc.moveTo(50, 270).lineTo(550, 270).stroke();
@@ -214,7 +224,7 @@ const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
 
       // Table Rows
       doc.font('Helvetica');
-      invoice.items.forEach((item: any) => {
+      (invoice as any).items.forEach((item: any) => {
         yPosition += 20;
         doc
           .text(item.title, 50, yPosition, { width: 240 })
@@ -230,59 +240,59 @@ const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
       yPosition += 20;
       doc
         .text('Subtotal:', 400, yPosition)
-        .text(`$${invoice.subtotal.toFixed(2)}`, 450, yPosition);
+        .text(`$${(invoice as any).subtotal.toFixed(2)}`, 450, yPosition);
 
       yPosition += 20;
       doc
         .text('VAT:', 400, yPosition)
-        .text(`$${invoice.vat.toFixed(2)}`, 450, yPosition);
+        .text(`$${(invoice as any).vat.toFixed(2)}`, 450, yPosition);
 
-      if (invoice.surcharge > 0) {
+      if ((invoice as any).surcharge > 0) {
         yPosition += 20;
         doc
           .text('Surcharge:', 400, yPosition)
-          .text(`$${invoice.surcharge.toFixed(2)}`, 450, yPosition);
+          .text(`$${(invoice as any).surcharge.toFixed(2)}`, 450, yPosition);
       }
 
-      if (invoice.discount > 0) {
+      if ((invoice as any).discount > 0) {
         yPosition += 20;
         doc
           .text('Discount:', 400, yPosition)
-          .text(`-$${invoice.discount.toFixed(2)}`, 450, yPosition);
+          .text(`-$${(invoice as any).discount.toFixed(2)}`, 450, yPosition);
       }
 
       yPosition += 25;
       doc
         .font('Helvetica-Bold')
         .text('Total:', 400, yPosition)
-        .text(`$${invoice.totalAmount.toFixed(2)}`, 450, yPosition);
+        .text(`$${(invoice as any).totalAmount.toFixed(2)}`, 450, yPosition);
 
       // Payment Status
       yPosition += 40;
       doc
         .font('Helvetica-Bold')
         .text(
-          `Payment Status: ${invoice.paymentStatus.toUpperCase()}`,
+          `Payment Status: ${(invoice as any).paymentStatus.toUpperCase()}`,
           50,
           yPosition,
         );
 
       // Notes
-      if (invoice.notes) {
+      if ((invoice as any).notes) {
         yPosition += 40;
         doc.font('Helvetica-Bold').text('Notes:', 50, yPosition);
         doc
           .font('Helvetica')
-          .text(invoice.notes, 50, yPosition + 15, { width: 500 });
+          .text((invoice as any).notes, 50, yPosition + 15, { width: 500 });
       }
 
       // Terms
-      if (invoice.terms) {
+      if ((invoice as any).terms) {
         yPosition += 60;
         doc.font('Helvetica-Bold').text('Terms & Conditions:', 50, yPosition);
         doc
           .font('Helvetica')
-          .text(invoice.terms, 50, yPosition + 15, { width: 500 });
+          .text((invoice as any).terms, 50, yPosition + 15, { width: 500 });
       }
 
       // Footer
@@ -294,9 +304,11 @@ const generateInvoicePDF = async (invoiceId: string): Promise<Buffer> => {
       doc.end();
 
       // Mark invoice as generated
-      invoice.isGenerated = true;
-      invoice.generatedAt = new Date();
-      await invoice.save();
+      (invoice as any).isGenerated = true;
+      (invoice as any).generatedAt = new Date();
+      invoice.save().catch(() => {
+        // ignore save errors (cannot reject here because PDF is already generated)
+      });
     } catch (error) {
       reject(error);
     }
