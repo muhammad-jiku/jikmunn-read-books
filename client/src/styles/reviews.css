@@ -1,0 +1,12 @@
+@layer components {
+  .rating-bar {
+    @apply h-full bg-yellow-400;
+    width: var(--rating-width, 0%);
+  }
+
+  @for i in range(0, 101) {
+    .rating-bar-w-[i] {
+      width: calc(1% * i);
+    }
+  }
+}

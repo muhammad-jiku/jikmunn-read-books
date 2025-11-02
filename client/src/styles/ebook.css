@@ -1,0 +1,11 @@
+@layer components {
+  .ebook-reader {
+    @apply text-base leading-normal mx-5;
+    font-size: var(--font-size, 16px);
+    line-height: var(--line-height, 1.5);
+  }
+
+  .ebook-content {
+    filter: brightness(var(--reader-brightness, 100%));
+  }
+}

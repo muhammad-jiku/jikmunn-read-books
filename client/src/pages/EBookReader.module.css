@@ -1,0 +1,56 @@
+.ebook-reader {
+  --font-size: 16px;
+  --line-height: 1.5;
+  --reader-brightness: 100%;
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  filter: brightness(var(--reader-brightness));
+}
+
+.ebook-reader[data-font-size] {
+  --font-size: attr(data-font-size) + 'px';
+}
+
+.ebook-reader[data-line-height] {
+  --line-height: attr(data-line-height);
+}
+
+.ebook-reader[data-brightness] {
+  --reader-brightness: attr(data-brightness) + '%';
+}
+
+.ebook-reader[data-font-family] {
+  font-family: var(--font-family);
+}
+
+.ebook-reader[data-font-family='serif'] {
+  --font-family: Georgia, serif;
+}
+.ebook-reader[data-font-family='sans-serif'] {
+  --font-family: system-ui, -apple-system, sans-serif;
+}
+.ebook-reader[data-font-family='mono'] {
+  --font-family: monospace;
+}
+
+.ebook-content {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: currentColor;
+  transition: width 0.2s ease-in-out;
+  width: var(--progress-width);
+}
+
+.progress-bar-reading {
+  height: 100%;
+  background-color: var(--progress-color, hsl(var(--primary)));
+}
+
+.progress-bar[data-progress] {
+  --progress-width: attr(data-progress) + '%';
+}

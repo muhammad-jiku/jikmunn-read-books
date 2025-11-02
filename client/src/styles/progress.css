@@ -1,0 +1,24 @@
+@layer components {
+  .progress-bar {
+    @apply h-2 rounded-full;
+  }
+
+  .progress-bar-base {
+    @apply bg-gray-200;
+  }
+
+  .progress-bar-reading {
+    @apply bg-blue-600;
+    width: var(--progress-width, 0%);
+  }
+
+  .progress-bar-plan {
+    @apply bg-yellow-500;
+    width: var(--progress-width, 0%);
+  }
+
+  .progress-bar-finished {
+    @apply bg-green-500;
+    width: var(--progress-width, 0%);
+  }
+}
